@@ -8,9 +8,11 @@ set (UBXSecAna_VERSION_MINOR 0)
 # configure a header file to pass some of the CMake settings
 # to the source code
 configure_file (
-  "${PROJECT_SOURCE_DIR}/Main/Include/UBXSecAnaConfig.h.in"
+  "${PROJECT_SOURCE_DIR}/Main/UBXSecAnaConfig.h.in"
   "${PROJECT_BINARY_DIR}/UBXSecAnaConfig.h"
 )
+install (FILES "${PROJECT_BINARY_DIR}/UBXSecAnaConfig.h" DESTINATION ${PROJECT_SOURCE_DIR}/Main)
+
 
 # You need to tell CMake where to find the ROOT installation.
 # (https://root.cern.ch/how/integrate-root-my-project-cmake)
@@ -28,12 +30,4 @@ include_directories("${PROJECT_BINARY_DIR}")
 add_definitions(`root-config --cflags --libs --glibs` -Wall -std=c++0x -Qunused-arguments)
 
 subdirs(Main Libraries)
-
-
-# add the binary tree to the search path for include files
-# so that we will find TutorialConfig.h
-#include_directories("${PROJECT_BINARY_DIR}")
-
-# add the executable
-#add_executable(Maker Maker.cpp)
 

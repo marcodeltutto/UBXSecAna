@@ -10,3 +10,7 @@ target_link_libraries(Maker ${ROOT_LIBRARIES})
 add_executable(Analyse Analyse.cpp)
 target_link_libraries(Analyse Libraries)
 target_link_libraries(Analyse ${ROOT_LIBRARIES})
+
+
+install (TARGETS Maker Analyse DESTINATION bin)
+
