@@ -100,7 +100,17 @@ void ActivateBranches(AnaTree *at) {
 }
 
 
+//____________________________________________________________________________________________________
+double eff_uncertainty(int _n, int _N) {
 
+  double n = (double) _n;
+  double N = (double) _N;
+
+  double unc = 1/std::sqrt(N) * std::sqrt((n/N)*(1-n/N));
+
+  return unc;
+
+} 
 
 
 
@@ -213,13 +223,17 @@ int main(int argc, char* argv[]) {
   //*************************
   //* Starting ROOT application
   //*************************
+
+  std::string env = std::getenv("UBXSecAnaRoot");
   
   //TApplication* rootapp = new TApplication("ROOT Application",&argc, argv);
   gROOT->SetBatch(kTRUE);
   gROOT->ProcessLine("gErrorIgnoreLevel = 2001;"); // 1001: INFO, 2001: WARNINGS, 3001: ERRORS
-  gROOT->ProcessLine(".x ../../Root/rootlogon.C");
+  gROOT->ProcessLine(".x ~/rootlogon.C");
 
-  gROOT->ProcessLine(".L ../../Root/loader_C.so");
+  std::string library = ".L " + env + "loader_C.so";
+  gROOT->ProcessLine(library.c_str());
+  //gROOT->ProcessLine(".L ../../Root/loader_C.so");
   
   std::cout << "Opening output file ubxsecana_output.root." << std::endl;
   TFile *file_out = new TFile("ubxsecana_output.root","RECREATE");
@@ -282,6 +296,12 @@ int main(int argc, char* argv[]) {
 
   
   int nsignal = 0;
+
+  int nsignal_qe = 0;
+  int nsignal_res = 0;
+  int nsignal_dis = 0;
+  int nsignal_coh = 0;
+  int nsignal_mec = 0;
   
   int signal_sel = 0;
   int bkg_anumu_sel = 0;
@@ -290,6 +310,12 @@ int main(int argc, char* argv[]) {
   int bkg_outfv_sel = 0;
   int bkg_cosmic_sel = 0;
   int bkg_cosmic_top_sel = 0;
+
+  int signal_sel_qe = 0;
+  int signal_sel_res = 0;
+  int signal_sel_dis = 0;
+  int signal_sel_coh = 0;
+  int signal_sel_mec = 0;
   
   int nEvtsWFlashInBeamSpill = 0;
   int nNumuCC = 0;
@@ -389,6 +415,17 @@ int main(int argc, char* argv[]) {
   TH1D* h_eff_mult_ch_den = new TH1D("h_eff_mult_ch_den", "h_eff_mult_ch_den", 10, 0, 15);
   TH1D* h_eff_muphi_num = new TH1D("h_eff_muphi_num", "h_eff_muphi_num", 15, -3.1415, 3.1415);
   TH1D* h_eff_muphi_den = new TH1D("h_eff_muphi_den", "h_eff_muphi_den", 15, -3.1415, 3.1415);
+
+  TH1D* h_eff_qe_num = new TH1D("h_eff_qe_num", "h_eff_qe_num", 15, 0, 3);
+  TH1D* h_eff_qe_den = new TH1D("h_eff_qe_den", "h_eff_qe_den", 15, 0, 3);
+  TH1D* h_eff_res_num = new TH1D("h_eff_res_num", "h_eff_res_num", 15, 0, 3);
+  TH1D* h_eff_res_den = new TH1D("h_eff_res_den", "h_eff_res_den", 15, 0, 3);
+  TH1D* h_eff_dis_num = new TH1D("h_eff_dis_num", "h_eff_dis_num", 15, 0, 3);
+  TH1D* h_eff_dis_den = new TH1D("h_eff_dis_den", "h_eff_dis_den", 15, 0, 3);
+  TH1D* h_eff_coh_num = new TH1D("h_eff_coh_num", "h_eff_coh_num", 15, 0, 3);
+  TH1D* h_eff_coh_den = new TH1D("h_eff_coh_den", "h_eff_coh_den", 15, 0, 3);
+  TH1D* h_eff_mec_num = new TH1D("h_eff_mec_num", "h_eff_mec_num", 15, 0, 3);
+  TH1D* h_eff_mec_den = new TH1D("h_eff_mec_den", "h_eff_mec_den", 15, 0, 3);
 
   TH1D* h_truth_xsec_mumom = new TH1D("h_truth_xsec_mumom", "h_truth_xsec_mumom", 6, bins_mumom);
   TH1D* h_truth_xsec_muangle = new TH1D("h_truth_xsec_muangle", "h_truth_xsec_muangle", 9, bins_mucostheta);
@@ -746,6 +783,12 @@ int main(int argc, char* argv[]) {
 
       nsignal++;
       isSignal = true;
+
+      if (t->mode == 0) nsignal_qe++;
+      if (t->mode == 1) nsignal_res++;
+      if (t->mode == 2) nsignal_dis++;
+      if (t->mode == 3) nsignal_coh++;
+      if (t->mode == 10) nsignal_mec++;
       
     }
     
@@ -773,6 +816,12 @@ int main(int argc, char* argv[]) {
       h_eff_muphi_den->Fill(t->lep_phi);
       h_eff_mult_den->Fill(t->genie_mult);
       h_eff_mult_ch_den->Fill(t->genie_mult_ch);
+
+      if (t->mode == 0) h_eff_qe_den->Fill(t->nu_e);
+      if (t->mode == 1) h_eff_res_den->Fill(t->nu_e);
+      if (t->mode == 2) h_eff_dis_den->Fill(t->nu_e);
+      if (t->mode == 3) h_eff_coh_den->Fill(t->nu_e);
+      if (t->mode == 10) h_eff_mec_den->Fill(t->nu_e);
 
       h_truth_xsec_mumom->Fill(t->true_muon_mom);
       h_truth_xsec_muangle->Fill(t->lep_costheta);
@@ -1424,6 +1473,27 @@ int main(int argc, char* argv[]) {
       h_eff_mult_ch_num->Fill(t->genie_mult_ch);
       h_mu_eff_mom_sel->Fill(t->true_muon_mom, t->muon_reco_eff);
 
+      if (t->mode == 0) {
+        h_eff_qe_num->Fill(t->nu_e);
+        signal_sel_qe++;
+      }
+      if (t->mode == 1) {
+        h_eff_res_num->Fill(t->nu_e);
+        signal_sel_res++;
+      }
+      if (t->mode == 2) {
+        h_eff_dis_num->Fill(t->nu_e);
+        signal_sel_dis++;
+      }
+      if (t->mode == 3) {
+        h_eff_coh_num->Fill(t->nu_e);
+        signal_sel_coh++;
+      }
+      if (t->mode == 10) {
+        h_eff_mec_num->Fill(t->nu_e);
+        signal_sel_mec++;
+      }
+
       pEff->Fill(true, t->nu_e);
       hmap_trklen["signal"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["signal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
@@ -1630,6 +1700,12 @@ int main(int argc, char* argv[]) {
   std::cout << "NC contamination: " << bkg_nc_sel/(double)(bkg_anumu_sel+bkg_nue_sel+bkg_nc_sel+bkg_outfv_sel+bkg_cosmic_sel) << std::endl;
   std::cout << "OUTFV contamination: " << bkg_outfv_sel/(double)(bkg_anumu_sel+bkg_nue_sel+bkg_nc_sel+bkg_outfv_sel+bkg_cosmic_sel) << std::endl << std::endl;
   
+  std::cout << "Efficiency QE: " << signal_sel_qe/(double)nsignal_qe << " +- " << eff_uncertainty(signal_sel_qe, nsignal_qe) << std::endl;
+  std::cout << "Efficiency RES: " << signal_sel_res/(double)nsignal_res << " +- " << eff_uncertainty(signal_sel_res, nsignal_res) << std::endl;
+  std::cout << "Efficiency COH: " << signal_sel_coh/(double)nsignal_coh << " +- " << eff_uncertainty(signal_sel_coh, nsignal_coh) << std::endl;
+  std::cout << "Efficiency DIS: " << signal_sel_dis/(double)nsignal_dis << " +- " << eff_uncertainty(signal_sel_dis, nsignal_dis) << std::endl;
+  std::cout << "Efficiency MEC: " << signal_sel_mec/(double)nsignal_mec << " +- " << eff_uncertainty(signal_sel_mec, nsignal_mec) << std::endl << std::endl;
+
   std::cout << "n events with a flash in the beam spill: " << nEvtsWFlashInBeamSpill << std::endl;
   std::cout << "n events numu CC (all voulumes): " << nNumuCC << std::endl;
   std::cout << " Signal events that have a recon muon: " << nSignalWMuonReco << std::endl;
@@ -1785,6 +1861,53 @@ int main(int argc, char* argv[]) {
   temp2 = "./output/efficiency_mult_ch";
   canvas_efficiency_mult_ch->SaveAs(temp2 + ".pdf");
   canvas_efficiency_mult_ch->SaveAs(temp2 + ".C","C");
+
+
+  TCanvas * canvas_efficiency_mode = new TCanvas();
+  TEfficiency* pEff_qe = new TEfficiency(*h_eff_qe_num,*h_eff_qe_den);
+  pEff_qe->SetTitle(";True Neutrino Energy [GeV];Efficiency");
+  pEff_qe->SetLineColor(kGreen+3);
+  pEff_qe->SetMarkerColor(kGreen+3);
+  pEff_qe->SetMarkerStyle(20);
+  pEff_qe->SetMarkerSize(0.5);
+  pEff_qe->Draw("ALP");
+  gPad->Update();
+  auto g_qe = pEff_qe->GetPaintedGraph();
+  g_qe->SetMinimum(0);
+  g_qe->SetMaximum(1);
+  gPad->Update();
+
+  TEfficiency* pEff_res = new TEfficiency(*h_eff_res_num,*h_eff_res_den);
+  pEff_res->SetLineColor(kRed+3);
+  pEff_res->SetMarkerColor(kRed+3);
+  pEff_res->SetMarkerStyle(20);
+  pEff_res->SetMarkerSize(0.5);
+  pEff_res->Draw("LP same");
+
+  TEfficiency* pEff_dis = new TEfficiency(*h_eff_dis_num,*h_eff_dis_den);
+  pEff_dis->SetLineColor(kBlue+3);
+  pEff_dis->SetMarkerColor(kBlue+3);
+  pEff_dis->SetMarkerStyle(20);
+  pEff_dis->SetMarkerSize(0.5);
+  pEff_dis->Draw("LP same");
+
+  TEfficiency* pEff_coh = new TEfficiency(*h_eff_coh_num,*h_eff_coh_den);
+  pEff_coh->SetLineColor(kOrange-3);
+  pEff_coh->SetMarkerColor(kOrange-3);
+  pEff_coh->SetMarkerStyle(20);
+  pEff_coh->SetMarkerSize(0.5);
+  pEff_coh->Draw("LP same");
+
+  TEfficiency* pEff_mec = new TEfficiency(*h_eff_mec_num,*h_eff_mec_den);
+  pEff_mec->SetLineColor(kMagenta+1); 
+  pEff_mec->SetMarkerColor(kMagenta+1);
+  pEff_mec->SetMarkerStyle(20);
+  pEff_mec->SetMarkerSize(0.5);
+  pEff_mec->Draw("LP same");
+
+  temp2 = "./output/efficiency_mode";
+  canvas_efficiency_mode->SaveAs(temp2 + ".pdf");
+  canvas_efficiency_mode->SaveAs(temp2 + ".C","C");
 
   
   /*TCanvas *c33 = new TCanvas();

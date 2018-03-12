@@ -119,7 +119,9 @@ namespace ubana {
 
   double CrossSectionCalculator2D::EstimateFlux() 
   {
-    TFile * f = TFile::Open("flux/numode_bnb_470m_r200.root");
+    std::string flux_file = std::getenv("UBXSecAnaFluxFile");
+    std::cout << "Using flux file: " << flux_file << std::endl;
+    TFile * f = TFile::Open(flux_file.c_str());
     f->cd();
     TH2D * h_flux_numu = (TH2D*) f->Get("numu");
     h_flux_numu->Scale(_pot/1.e20);

@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.0 FATAL_ERROR)
 project (UBXSecAna)
 
 # The version number.
@@ -16,8 +16,26 @@ install (FILES "${PROJECT_BINARY_DIR}/UBXSecAnaConfig.h" DESTINATION ${PROJECT_S
 
 # You need to tell CMake where to find the ROOT installation.
 # (https://root.cern.ch/how/integrate-root-my-project-cmake)
-list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
-find_package(ROOT REQUIRED)
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}/etc/cmake)
+#---Define useful ROOT functions and macros (e.g. ROOT_GENERATE_DICTIONARY)
+find_package(ROOT REQUIRED COMPONENTS RIO)
+if(!ROOT_FOUND)
+    message(STATUS "PROBLEM FINDING ROOT, SEE BELOW")
+    message(STATUS "ROOT found: ${ROOT_FOUND}")
+    message(STATUS "ROOT_CXX_FLAGS: ${ROOT_CXX_FLAGS}")
+    message(STATUS "ROOT_INCLUDE_DIRS: ${ROOT_INCLUDE_DIRS}")
+    message(STATUS "ROOT_INCLUDE_DIRS: ${ROOT_INCLUDE_DIRS}")
+    message(STATUS "ROOT_LIBRARIES: ${ROOT_LIBRARIES}")
+    message(STATUS "ROOT_DEFINITIONS: ${ROOT_DEFINITIONS}")
+    message(STATUS "ROOT_LIBRARIES: ${ROOT_LIBRARIES}")
+    include(${ROOT_USE_FILE})
+    include_directories(${ROOT_INCLUDE_DIRS})
+endif()
+include(${ROOT_USE_FILE})
+#ROOT_GENERATE_DICTIONARY(G__Event ${PROJECT_SOURCE_DIR}/Main/loader.C)
+#add_library(Event SHARED G__Event.cxx)
+#target_link_libraries(Event ${ROOT_LIBRARIES})
+
 #include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 #include(${ROOT_USE_FILE})
 

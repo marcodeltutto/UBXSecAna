@@ -52,10 +52,12 @@ int main(int argc, char* argv[]) {
   std::string bnbon_file_name  = "ubxsecana_output.root";
   std::string extbnb_file_name = "ubxsecana_output.root";
   double bnbon_pot_meas        = -1;
-  
+  double bnbon_triggers        = -1;
+  double extbnb_triggers       = -1;
+
   
   int opt;
-  while ((opt = getopt (argc, argv, "m:c:b:e:p:")) != -1)
+  while ((opt = getopt (argc, argv, "m:c:b:e:p:n:g:")) != -1)
   {
     switch (opt)
     {
@@ -79,8 +81,16 @@ int main(int argc, char* argv[]) {
         std::cout << "BNBON POT: " << optarg << std::endl;
         bnbon_pot_meas = atof(optarg);
         break;
+      case 'n':
+        std::cout << "BNBON Triggers: " << optarg << std::endl;
+        bnbon_triggers = atof(optarg);
+        break;
+      case 'g':
+        std::cout << "EXTBNB Triggers: " << optarg << std::endl;
+        extbnb_triggers = atof(optarg);
+        break;
       default:
-        std::cerr << "Usage: " << argv[0] << " [-m mc bnbcosmic file] [-c mc intimecosmic file] [-b bnbon data file] [-e extbnb data file] [-p bnbon pot" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [-m mc bnbcosmic file] [-c mc intimecosmic file] [-b bnbon data file] [-e extbnb data file] [-n bnbon triggers] [-g extbnb triggers] [-p bnbon pot]" << std::endl;
         exit(EXIT_FAILURE);
     }
     
@@ -97,13 +107,15 @@ int main(int argc, char* argv[]) {
   argc = 1;
   argv = temp;
 
-  
+  std::string env = std::getenv("UBXSecAnaRoot");
+
   TApplication* rootapp = new TApplication("ROOT Application",&argc, argv);
   //gROOT->SetBatch(kTRUE);
   gROOT->ProcessLine("gErrorIgnoreLevel = 2001;"); // 1001: INFO, 2001: WARNINGS, 3001: ERRORS
-  gROOT->ProcessLine(".x rootlogon.C");
+  gROOT->ProcessLine(".x ~/rootlogon.C");
 
-  gROOT->ProcessLine(".L loader_C.so");
+  std::string library = ".L " + env + "loader_C.so";
+  gROOT->ProcessLine(library.c_str());
   
   int bnbon_total_events = 1000;
   int extbnb_total_events = 1000;
@@ -164,7 +176,7 @@ int main(int argc, char* argv[]) {
   // *************************************
   // Calculating scale factors
   // *************************************
-  double scale_factor_extbnb = 0.7432886072; //0.7937414399; //0.78661374; //0.278463;//1.23 * (382718./(double)extbnb_total_events) * ((double)bnbon_total_events/547616.);
+  double scale_factor_extbnb = (double)bnbon_triggers/(double)extbnb_triggers;// 0.7432886072; //0.7937414399; //0.78661374; //0.278463;//1.23 * (382718./(double)extbnb_total_events) * ((double)bnbon_total_events/547616.);
   //double scale_factor_extbnb = 10378764. / 8243750.;
   double scale_factor_bnbon = 1.; //bnbon_pot_meas * bnbon_pot_target;
   double scale_factor_mc_bnbcosmic = bnbon_pot_meas / mc_pot_sim;
@@ -711,6 +723,7 @@ int main(int argc, char* argv[]) {
   leg->AddEntry(h_trkphi_total_bnbon,"Data (Beam-on)","lep");  //DrawDataHisto(h_trkphi_data);
   //leg->AddEntry(h_trkphi_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "trkphi";
   canvas_trkphi->SaveAs(name + ".pdf");
@@ -722,6 +735,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_multpfp_data);
   leg->AddEntry(h_multpfp_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "multpfp";
   canvas_multpfp->SaveAs(name + ".pdf");
@@ -733,6 +747,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_multtracktol_data);
   leg->AddEntry(h_multtracktol_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "multtracktol";
   canvas_multtracktol->SaveAs(name + ".pdf");
@@ -744,6 +759,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_xdiff_b_data);
   leg->AddEntry(h_xdiff_b_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "xdiff_b";
   canvas_xdiff_b->SaveAs(name + ".pdf");
@@ -755,6 +771,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_zdiff_b_data);
   leg->AddEntry(h_zdiff_b_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "zdiff_b";
   canvas_b_zdiff->SaveAs(name + ".pdf");
@@ -766,6 +783,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_xdiff_data);
   leg->AddEntry(h_xdiff_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "xdiff";
   canvas_xdiff->SaveAs(name + ".pdf");
@@ -777,6 +795,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_zdiff_data);
   leg->AddEntry(h_zdiff_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "zdiff";
   canvas_zdiff->SaveAs(name + ".pdf");
@@ -789,7 +808,7 @@ int main(int argc, char* argv[]) {
   THStack *hs_vtxcheck_angle_mc = new THStack("hs_vtxcheck_angle",";Angle [rad]; TPCObjects (Before Selection)");
   hmap_vtxcheck_angle_mc["beam-off"] = h_vtxcheck_angle_total_extbnb;
   leg = DrawTHStack2(hs_vtxcheck_angle_mc, scale_factor_mc_bnbcosmic, true, hmap_vtxcheck_angle_mc);
-  leg->AddEntry(hmap_vtxcheck_angle_mc["beam-off"],"Data (Beam-off)","f");
+  //leg->AddEntry(hmap_vtxcheck_angle_mc["beam-off"],"Data (Beam-off)","f");
   leg->AddEntry(h_vtxcheck_angle_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxx_total_bnbon);
   DrawDataHisto(h_vtxcheck_angle_total_bnbon);
   //leg->AddEntry(h_vtxcheck_angle_total_data,"Data (Beam-on - Beam-off)","lep");
@@ -806,7 +825,7 @@ int main(int argc, char* argv[]) {
   THStack *hs_residulas_std_mc = new THStack("hs_residulas_std",";#sigma_{r_{i}}; TPCObjects (Before Selection)");
   hmap_residuals_std_mc["beam-off"] = h_residuals_std_total_extbnb;
   leg = DrawTHStack2(hs_residulas_std_mc, scale_factor_mc_bnbcosmic, true, hmap_residuals_std_mc);
-  leg->AddEntry(hmap_residuals_std_mc["beam-off"],"Data (Beam-off)","f");
+  //leg->AddEntry(hmap_residuals_std_mc["beam-off"],"Data (Beam-off)","f");
   leg->AddEntry(h_residuals_std_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxx_total_bnbon);
   DrawDataHisto(h_residuals_std_total_bnbon);
   //leg->AddEntry(h_vtxcheck_angle_total_data,"Data (Beam-on - Beam-off)","lep");
@@ -823,7 +842,7 @@ int main(int argc, char* argv[]) {
   THStack *hs_residulas_mean_mc = new THStack("hs_residulas_mean",";<r_{i}>; TPCObjects (Before Selection)");
   hmap_residuals_mean_mc["beam-off"] = h_residuals_mean_total_extbnb;
   leg = DrawTHStack2(hs_residulas_mean_mc, scale_factor_mc_bnbcosmic, true, hmap_residuals_mean_mc);
-  leg->AddEntry(hmap_residuals_mean_mc["beam-off"],"Data (Beam-off)","f");
+  //leg->AddEntry(hmap_residuals_mean_mc["beam-off"],"Data (Beam-off)","f");
   leg->AddEntry(h_residuals_mean_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxx_total_bnbon);
   DrawDataHisto(h_residuals_mean_total_bnbon);
   //leg->AddEntry(h_vtxcheck_angle_total_data,"Data (Beam-on - Beam-off)","lep");
@@ -841,7 +860,7 @@ int main(int argc, char* argv[]) {
   THStack *hs_perc_used_hits_mc = new THStack("hs_residulas_mean",";Fraction of used hits in cluster; TPCObjects (Before Selection)");
   hmap_perc_used_hits_mc["beam-off"] = h_perc_used_hits_total_extbnb;
   leg = DrawTHStack2(hs_perc_used_hits_mc, scale_factor_mc_bnbcosmic, true, hmap_perc_used_hits_mc);
-  leg->AddEntry(hmap_perc_used_hits_mc["beam-off"],"Data (Beam-off)","f");
+  //leg->AddEntry(hmap_perc_used_hits_mc["beam-off"],"Data (Beam-off)","f");
   leg->AddEntry(h_perc_used_hits_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxx_total_bnbon);
   DrawDataHisto(h_perc_used_hits_total_bnbon);
   //leg->AddEntry(h_vtxcheck_angle_total_data,"Data (Beam-on - Beam-off)","lep");
@@ -859,12 +878,13 @@ int main(int argc, char* argv[]) {
   THStack *hs_vtxx_mc = new THStack("hs_vtxx",";Candidate Neutrino Vertex X [cm]; Selected Events");
   hmap_vtxx_mc["beam-off"] = h_vtxx_total_extbnb;
   leg = DrawTHStack2(hs_vtxx_mc, scale_factor_mc_bnbcosmic, true, hmap_vtxx_mc);
-  leg->AddEntry(hmap_vtxx_mc["beam-off"],"Data (Beam-off)","f");
+  //leg->AddEntry(hmap_vtxx_mc["beam-off"],"Data (Beam-off)","f");
   leg->AddEntry(h_vtxx_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxx_total_bnbon);
   DrawDataHisto(h_vtxx_total_bnbon);
   hs_vtxx_mc->SetMaximum(600);
   //leg->AddEntry(h_vtxx_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "vtxx";
   canvas_vtxx->SaveAs(name + ".pdf");
@@ -878,12 +898,13 @@ int main(int argc, char* argv[]) {
   THStack *hs_vtxy_mc = new THStack("hs_vtxy",";Candidate Neutrino Vertex Y [cm]; Selected Events");
   hmap_vtxy_mc["beam-off"] = h_vtxy_total_extbnb;
   leg = DrawTHStack2(hs_vtxy_mc, scale_factor_mc_bnbcosmic, true, hmap_vtxy_mc);
-  leg->AddEntry(hmap_vtxy_mc["beam-off"],"Data (Beam-off)","f");
+  //leg->AddEntry(hmap_vtxy_mc["beam-off"],"Data (Beam-off)","f");
   leg->AddEntry(h_vtxy_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxy_data);
   DrawDataHisto(h_vtxy_total_bnbon);
   hs_vtxy_mc->SetMaximum(650);
   //leg->AddEntry(h_vtxy_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "vtxy";
   canvas_vtxy->SaveAs(name + ".pdf");
@@ -894,12 +915,13 @@ int main(int argc, char* argv[]) {
   hmap_vtxz_mc["beam-off"] = h_vtxz_total_extbnb;
   leg = DrawTHStack2(hs_vtxz_mc, scale_factor_mc_bnbcosmic, true, hmap_vtxz_mc);
   //h_vtxz_data->Draw("E1 same");
-  leg->AddEntry(hmap_vtxz_mc["beam-off"],"Data (Beam-off)","f");
+  //leg->AddEntry(hmap_vtxz_mc["beam-off"],"Data (Beam-off)","f");
   leg->AddEntry(h_vtxz_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxz_data);
   DrawDataHisto(h_vtxz_total_bnbon);
   hs_vtxz_mc->SetMaximum(900);
   //leg->AddEntry(h_vtxz_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "vtxz";
   canvas_vtxz->SaveAs(name + ".pdf");
@@ -913,6 +935,7 @@ int main(int argc, char* argv[]) {
   //hs_flsmatch_score_mc->SetMaximum(900);
   leg->AddEntry(h_flsmatch_score_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "flsmatch_score";
   canvas_flsmatch_score->SaveAs(name + ".pdf");
@@ -924,6 +947,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_ntpcobj_data);
   leg->AddEntry(h_ntpcobj_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
   
   name = outdir + "ntpcobj";
   canvas_ntpcobj->SaveAs(name + ".pdf");
@@ -935,6 +959,7 @@ int main(int argc, char* argv[]) {
   DrawDataHisto(h_dqdx_trunc_data);
   leg->AddEntry(h_dqdx_trunc_data,"Data (Beam-on - Beam-off)","lep");
   DrawPOT(bnbon_pot_meas);
+  leg->Draw();
 
   name = outdir + "dqdx_trunc";
   canvas_dqdx_trunc->SaveAs(name + ".pdf");

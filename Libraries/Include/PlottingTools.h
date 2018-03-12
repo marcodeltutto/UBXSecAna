@@ -385,6 +385,7 @@ TLegend* DrawTHStack2(THStack *hs_trklen,
     themap["beam-off"]->SetLineColor(kBlue+2);
     themap["beam-off"]->SetFillColor(kBlue+2);
     themap["beam-off"]->SetFillStyle(3004);
+    themap["total"]->Add(themap["beam-off"]);
     hs_trklen->Add(themap["beam-off"]);
   }
   
@@ -414,9 +415,19 @@ TLegend* DrawTHStack2(THStack *hs_trklen,
   leg2->AddEntry(themap["signal"],sstm.str().c_str(),"f");
   sstm.str("");
   
-  sstm << "Background, " << std::setprecision(2)  << themap["background"]->Integral() / themap["total"]->Integral()*100. << "%";
+  if (themap["beam-off"] != NULL) {
+    sstm << "Background (MC BNB+Cosmic), " << std::setprecision(2)  << themap["background"]->Integral() / themap["total"]->Integral()*100. << "%";
+  } else {
+    sstm << "Background, " << std::setprecision(2)  << themap["background"]->Integral() / themap["total"]->Integral()*100. << "%";
+  }
   leg2->AddEntry(themap["background"],sstm.str().c_str(),"f");
   sstm.str("");
+
+  if (themap["beam-off"] != NULL) {
+    sstm << "Background (Off-Beam), " << std::setprecision(2)  << themap["beam-off"]->Integral() / themap["total"]->Integral()*100. << "%";
+    leg2->AddEntry(themap["beam-off"],sstm.str().c_str(),"f");
+    sstm.str("");
+  }
   
   //leg2->AddEntry(themap["total"],"MC Stat Unc.","f");
   //leg2->Draw();
