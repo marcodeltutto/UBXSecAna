@@ -416,7 +416,7 @@ TLegend* DrawTHStack2(THStack *hs_trklen,
   sstm.str("");
   
   if (themap["beam-off"] != NULL) {
-    sstm << "Background (MC BNB+Cosmic), " << std::setprecision(2)  << themap["background"]->Integral() / themap["total"]->Integral()*100. << "%";
+    sstm << "Background (MC), " << std::setprecision(2)  << themap["background"]->Integral() / themap["total"]->Integral()*100. << "%";
   } else {
     sstm << "Background, " << std::setprecision(2)  << themap["background"]->Integral() / themap["total"]->Integral()*100. << "%";
   }

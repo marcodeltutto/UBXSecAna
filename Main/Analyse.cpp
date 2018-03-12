@@ -236,7 +236,8 @@ int main(int argc, char* argv[]) {
   std::map<std::string,TH1D*> hmap_residuals_mean_mc = *temp_map;
   mc_bnbcosmic_file->GetObject("hmap_perc_used_hits", temp_map);
   std::map<std::string,TH1D*> hmap_perc_used_hits_mc = *temp_map;
-  
+  mc_bnbcosmic_file->GetObject("hmap_mom_mcs_length", temp_map);
+  std::map<std::string,TH1D*> hmap_mom_mcs_length_mc = *temp_map;
 
   
   mc_bnbcosmic_file->GetObject("hmap_dqdx_trunc", temp_map);
@@ -284,6 +285,8 @@ int main(int argc, char* argv[]) {
   TH1D* h_residuals_mean_total_extbnb = (TH1D*)extbnb_file->Get("h_residuals_mean_total");
   TH1D* h_perc_used_hits_total_bnbon = (TH1D*)bnbon_file->Get("h_perc_used_hits_total");
   TH1D* h_perc_used_hits_total_extbnb = (TH1D*)extbnb_file->Get("h_perc_used_hits_total");
+  TH1D* h_mom_mcs_length_total_bnbon = (TH1D*)bnbon_file->Get("h_mom_mcs_length_total");
+  TH1D* h_mom_mcs_length_total_extbnb = (TH1D*)extbnb_file->Get("h_mom_mcs_length_total");
 
   TH1D* h_dqdx_trunc_total_bnbon = (TH1D*)bnbon_file->Get("h_dqdx_trunc_total");
   TH1D* h_dqdx_trunc_total_extbnb = (TH1D*)extbnb_file->Get("h_dqdx_trunc_total");
@@ -567,6 +570,11 @@ int main(int argc, char* argv[]) {
   h_perc_used_hits_total_data->Sumw2();
   h_perc_used_hits_total_data->Add(h_perc_used_hits_total_extbnb, -1.);
 
+  h_mom_mcs_length_total_extbnb->Scale(scale_factor_extbnb);
+  h_mom_mcs_length_total_bnbon->Scale(scale_factor_bnbon);
+  TH1D* h_mom_mcs_length_total_data = (TH1D*)h_mom_mcs_length_total_bnbon->Clone("h_mom_mcs_length_total_data");
+  h_mom_mcs_length_total_data->Sumw2();
+  h_mom_mcs_length_total_data->Add(h_mom_mcs_length_total_extbnb, -1.);
 
   // *************************************
   // Plotting data and MC distribution
@@ -872,6 +880,20 @@ int main(int argc, char* argv[]) {
   canvas_perc_used_hits->SaveAs(name + ".C","C");
 
   
+  TCanvas* canvas_mom_mcs_length = new TCanvas();
+  THStack *hs_mom_mcs_length_mc = new THStack("hs_residulas_mean",";(MCS - Length) Reconstructed Momentum [GeV]; TPCObjects (Before Selection)");
+  hmap_mom_mcs_length_mc["beam-off"] = h_mom_mcs_length_total_extbnb;
+  leg = DrawTHStack2(hs_mom_mcs_length_mc, scale_factor_mc_bnbcosmic, true, hmap_mom_mcs_length_mc);
+  //leg->AddEntry(hmap_perc_used_hits_mc["beam-off"],"Data (Beam-off)","f");
+  leg->AddEntry(h_mom_mcs_length_total_bnbon,"Data (Beam-on)","lep");  // DrawDataHisto(h_vtxx_total_bnbon);
+  DrawDataHisto(h_mom_mcs_length_total_bnbon);
+  //leg->AddEntry(h_vtxcheck_angle_total_data,"Data (Beam-on - Beam-off)","lep");
+  DrawPOT(bnbon_pot_meas);
+  leg->Draw();
+  
+  name = outdir + "mom_mcs_length";
+  canvas_mom_mcs_length->SaveAs(name + ".pdf");
+  canvas_mom_mcs_length->SaveAs(name + ".C","C");
   
   
   TCanvas* canvas_vtxx = new TCanvas();

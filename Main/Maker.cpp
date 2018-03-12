@@ -516,6 +516,10 @@ int main(int argc, char* argv[]) {
   hmap_perc_used_hits["signal"] = new TH1D("h_perc_used_hits_signal", ";Fraction of used hits in cluster;Entries per bin", 30, 0, 1);
   hmap_perc_used_hits["background"] = new TH1D("h_perc_used_hits_background", ";Fraction of used hits in cluster;Entries per bin", 30, 0, 1);
 
+  std::map<std::string,TH1D*> hmap_mom_mcs_length;
+  hmap_mom_mcs_length["total"] = new TH1D("h_mom_mcs_length_total", ";(MCS - Length) Reconstructed Momentum [GeV];Entries per bin", 20, -0.5, 1.5);
+  hmap_mom_mcs_length["signal"] = new TH1D("h_mom_mcs_length_signal", ";(MCS - Length) Reconstructed Momentum [GeV];Entries per bin", 20, -0.5, 1.5);
+  hmap_mom_mcs_length["background"] = new TH1D("h_mom_mcs_length_background", ";(MCS - Length) Reconstructed Momentum [GeV];Entries per bin", 20, -0.5, 1.5);
 
   TH1D* h_muon_track_eff  = new TH1D("h_muon_track_eff",  ";Muon track efficiency;Entries per bin",  100, 0, 1);
   TH1D* h_muon_track_pur  = new TH1D("h_muon_track_pur",  ";Muon track purity;Entries per bin",  100, 0, 1);
@@ -1069,14 +1073,23 @@ int main(int argc, char* argv[]) {
       hmap_residuals_std["total"]->Fill(t->slc_muoncandidate_residuals_std.at(slc));
       hmap_residuals_mean["total"]->Fill(t->slc_muoncandidate_residuals_mean.at(slc));
       hmap_perc_used_hits["total"]->Fill(t->slc_muoncandidate_perc_used_hits_in_cluster.at(slc));
+      if(t->slc_muoncandidate_contained.at(slc)) {
+        hmap_mom_mcs_length["total"]->Fill(t->slc_muoncandidate_mom_mcs.at(slc) - t->slc_muoncandidate_mom_range.at(slc));
+      }
       if (isSignal && nu_origin) {
         hmap_residuals_std["signal"]->Fill(t->slc_muoncandidate_residuals_std.at(slc));
         hmap_residuals_mean["signal"]->Fill(t->slc_muoncandidate_residuals_mean.at(slc));
         hmap_perc_used_hits["signal"]->Fill(t->slc_muoncandidate_perc_used_hits_in_cluster.at(slc));
+        if(t->slc_muoncandidate_contained.at(slc)) {
+          hmap_mom_mcs_length["signal"]->Fill(t->slc_muoncandidate_mom_mcs.at(slc) - t->slc_muoncandidate_mom_range.at(slc));
+        }
       } else {
         hmap_residuals_std["background"]->Fill(t->slc_muoncandidate_residuals_std.at(slc));
         hmap_residuals_mean["background"]->Fill(t->slc_muoncandidate_residuals_mean.at(slc));
         hmap_perc_used_hits["background"]->Fill(t->slc_muoncandidate_perc_used_hits_in_cluster.at(slc));
+        if(t->slc_muoncandidate_contained.at(slc))  {
+          hmap_mom_mcs_length["background"]->Fill(t->slc_muoncandidate_mom_mcs.at(slc) - t->slc_muoncandidate_mom_range.at(slc));
+        }
       }
       
       // Track chi2
@@ -1745,6 +1758,11 @@ int main(int argc, char* argv[]) {
   pEff2->SetMarkerStyle(20);
   pEff2->SetMarkerSize(0.5);
   pEff2->Draw("AP");
+  gPad->Update();
+  auto g = pEff2->GetPaintedGraph();
+  g->SetMinimum(0);
+  g->SetMaximum(1);
+  gPad->Update();
   
   temp2 = "./output/efficiency";
   canvas_efficiency->SaveAs(temp2 + ".pdf");
@@ -1764,7 +1782,7 @@ int main(int argc, char* argv[]) {
   pEff3_2->SetTitle(";True Muon cos(#theta);Reconstruction Efficiency");
   pEff3_2->Draw("AP");
   gPad->Update();
-  auto g = pEff3_2->GetPaintedGraph();
+  g = pEff3_2->GetPaintedGraph();
   g->SetMinimum(0);
   g->SetMaximum(1);
   gPad->Update();
@@ -2437,7 +2455,8 @@ int main(int argc, char* argv[]) {
   file_out->WriteObject(&hmap_residuals_std, "hmap_residuals_std");
   file_out->WriteObject(&hmap_residuals_mean, "hmap_residuals_mean");
   file_out->WriteObject(&hmap_perc_used_hits, "hmap_perc_used_hits");
-  
+  file_out->WriteObject(&hmap_mom_mcs_length, "hmap_mom_mcs_length");
+
   file_out->WriteObject(&hmap_xdiff_b, "hmap_xdiff_b");
   file_out->WriteObject(&hmap_zdiff_b, "hmap_zdiff_b");
   file_out->WriteObject(&hmap_xdiff, "hmap_xdiff");

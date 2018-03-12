@@ -12,4 +12,8 @@ make install
 ```
 
 ## Run
-Scripts to run are in `UBXSecAna/Mac/*`
+Scripts to run are in `UBXSecAna/Mac/*`. Run setup script first:
+```
+source setup.sh
+source Mac/run_maker.sh
+```
