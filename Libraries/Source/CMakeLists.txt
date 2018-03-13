@@ -3,6 +3,6 @@
 include_directories(${UBXSecAna_SOURCE_DIR}/Libraries/Include)
 add_library(Libraries   MigrationMatrix2D.cxx 
                         MigrationMatrix4D.cxx 
+                        CrossSectionCalculator1D.cxx
                         CrossSectionCalculator2D.cxx
-                        PlotHandler.cxx
                         AnaTree.C)

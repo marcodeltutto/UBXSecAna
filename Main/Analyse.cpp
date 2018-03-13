@@ -25,7 +25,7 @@
 #include "Spectrum.hpp"
 #include "Spectrum2D.hpp"
 #include "PlottingTools.h"
-#include "PlotHandler.h"
+#include "CrossSectionCalculator1D.h"
 #include "MigrationMatrix2D.h"
 #include "MigrationMatrix4D.h"
 #include "CrossSectionCalculator2D.h"
@@ -324,7 +324,7 @@ int main(int argc, char* argv[]) {
 
 
 
-  ubana::PlotHandler _plot_handler;
+  ubana::CrossSectionCalculator1D _plot_handler;
   _plot_handler.SetScaleFactors(scale_factor_mc_bnbcosmic, scale_factor_bnbon, scale_factor_extbnb);
   _plot_handler.SetPOT(bnbon_pot_meas);
   _plot_handler.SetOutDir("output_data_mc");

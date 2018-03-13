@@ -1,15 +1,15 @@
-#ifndef PLOTHANDLER_CXX
-#define PLOTHANDLER_CXX
+#ifndef CROSSSECTIONCALCULATOR1D_CXX
+#define CROSSSECTIONCALCULATOR1D_CXX
 
-#include "PlotHandler.h"
+#include "CrossSectionCalculator1D.h"
 
 namespace ubana {
 
-  PlotHandler::PlotHandler()
+  CrossSectionCalculator1D::CrossSectionCalculator1D()
   {
   }
 
-  void PlotHandler::Reset() 
+  void CrossSectionCalculator1D::Reset() 
   {
 
     _configured = false;
@@ -37,7 +37,7 @@ namespace ubana {
     _h_true_reco_mom = NULL;
   }
 
-  void PlotHandler::SetScaleFactors(double bnbcosmic, double bnbon, double extbnb, double intimecosmic)
+  void CrossSectionCalculator1D::SetScaleFactors(double bnbcosmic, double bnbon, double extbnb, double intimecosmic)
   {
     _scale_factor_mc_bnbcosmic = bnbcosmic;
     _scale_factor_bnbon = bnbon;
@@ -47,18 +47,18 @@ namespace ubana {
     _configured = true;
   }
 
-  void PlotHandler::SetPOT(double pot)
+  void CrossSectionCalculator1D::SetPOT(double pot)
   {
     _pot = pot;
   }
 
-  void PlotHandler::SetNameAndLabel(std::string name, std::string label)
+  void CrossSectionCalculator1D::SetNameAndLabel(std::string name, std::string label)
   {
     _name = name;
     _label = label;
   }
 
-  void PlotHandler::SetOutDir(std::string dir)
+  void CrossSectionCalculator1D::SetOutDir(std::string dir)
   {
     _outdir = dir;
 
@@ -72,15 +72,15 @@ namespace ubana {
 
   }
 
-  void PlotHandler::SetMigrationMatrix(TMatrix s) 
+  void CrossSectionCalculator1D::SetMigrationMatrix(TMatrix s) 
   {
     _S.ResizeTo(s.GetNrows(), s.GetNcols());
     _S = s;
   }
 
-  void PlotHandler::PrintConfig() {
+  void CrossSectionCalculator1D::PrintConfig() {
 
-    std::cout << "--- PlotHandler:" << std::endl;
+    std::cout << "--- CrossSectionCalculator1D:" << std::endl;
     std::cout << "---   _scale_factor_mc_bnbcosmic     = " << _scale_factor_mc_bnbcosmic << std::endl;
     std::cout << "---   _scale_factor_bnbon            = " << _scale_factor_bnbon << std::endl;
     std::cout << "---   _scale_factor_extbnb           = " << _scale_factor_extbnb << std::endl;
@@ -89,7 +89,7 @@ namespace ubana {
 
   }
 
-  void PlotHandler::SetHistograms(std::map<std::string,TH1D*> bnbcosmic, TH1D* bnbon, TH1D* extbnb, TH1D* intimecosmic) 
+  void CrossSectionCalculator1D::SetHistograms(std::map<std::string,TH1D*> bnbcosmic, TH1D* bnbon, TH1D* extbnb, TH1D* intimecosmic) 
   {
 
     _hmap_bnbcosmic = bnbcosmic;
@@ -99,7 +99,7 @@ namespace ubana {
 
   }
 
-  void PlotHandler::SetTruthHistograms(TH1D* num, TH1D* den, TH2D* h)
+  void CrossSectionCalculator1D::SetTruthHistograms(TH1D* num, TH1D* den, TH2D* h)
   {
     _h_eff_mumom_num = num;
     _h_eff_mumom_den = den;
@@ -108,12 +108,12 @@ namespace ubana {
 
   }
 
-  void PlotHandler::SetTruthXSec(TH1D* xsec) 
+  void CrossSectionCalculator1D::SetTruthXSec(TH1D* xsec) 
   {
     _truth_xsec = xsec;
   }
 
-  double PlotHandler::EstimateFlux() 
+  double CrossSectionCalculator1D::EstimateFlux() 
   {
     std::string flux_file = std::getenv("UBXSecAnaFluxFile");
     std::cout << "Using flux file: " << flux_file << std::endl;
@@ -213,7 +213,7 @@ namespace ubana {
     return _flux;
   }
 
-  void PlotHandler::Smear(int n, int m)
+  void CrossSectionCalculator1D::Smear(int n, int m)
   {
 
 
@@ -369,7 +369,7 @@ namespace ubana {
 
 
 
-  void PlotHandler::ProcessPlots() 
+  void CrossSectionCalculator1D::ProcessPlots() 
   {
 
     // Scale mc histograms
@@ -399,7 +399,7 @@ namespace ubana {
   }
 
 
-  void PlotHandler::ExtractCrossSection(std::string xaxis_label, std::string yaxis_label) 
+  void CrossSectionCalculator1D::ExtractCrossSection(std::string xaxis_label, std::string yaxis_label) 
   {
 
     //
@@ -516,7 +516,7 @@ namespace ubana {
 
 
 
-  void PlotHandler::Draw(std::vector<std::string> histos_to_subtract)
+  void CrossSectionCalculator1D::Draw(std::vector<std::string> histos_to_subtract)
   {
 
     TH1D* _h_data_subtracted = (TH1D*)_h_bnbon->Clone("_h_data_subtracted");
@@ -524,7 +524,7 @@ namespace ubana {
 
     for (auto hname : histos_to_subtract) 
     {
-      std::cout << "[PlotHandler] Going to subtract histogram " << hname << std::endl;
+      std::cout << "[CrossSectionCalculator1D] Going to subtract histogram " << hname << std::endl;
       // Need to remove from the data histogram
       _h_data_subtracted->Add(_hmap_bnbcosmic[hname], -1.);
       // But also form the total MC one, to properly propagate unc
@@ -558,7 +558,7 @@ namespace ubana {
 
   }
 
-  void PlotHandler::Draw() 
+  void CrossSectionCalculator1D::Draw() 
   {
 
     TLegend* leg = new TLegend(0.56,0.37,0.82,0.82,NULL,"brNDC");;
@@ -606,7 +606,7 @@ namespace ubana {
 
 
 
-  THStack * PlotHandler::ProcessTHStack(std::map<std::string,TH1D*> themap, TLegend* leg, std::vector<std::string> histos_to_subtract){
+  THStack * CrossSectionCalculator1D::ProcessTHStack(std::map<std::string,TH1D*> themap, TLegend* leg, std::vector<std::string> histos_to_subtract){
 
     THStack *hs_trklen = new THStack("hs",_label.c_str());
 
@@ -777,7 +777,7 @@ namespace ubana {
 
   }
 
-  TH1D* PlotHandler::ProcessDataHisto(TH1D* histo) {
+  TH1D* CrossSectionCalculator1D::ProcessDataHisto(TH1D* histo) {
 
     histo->SetMarkerStyle(kFullCircle);
     histo->SetMarkerSize(0.6);
@@ -787,7 +787,7 @@ namespace ubana {
   }
 
 
-  TLatex* PlotHandler::GetPOTLatex(double pot) {
+  TLatex* CrossSectionCalculator1D::GetPOTLatex(double pot) {
 
     std::stringstream sstm2;
     sstm2 << "Accumulated POT: " << pot;

@@ -1,8 +1,8 @@
 /**
- * \file PlotHandler.h
+ * \file CrossSectionCalculator1D.h
  *
  * 
- * \brief Class def header for a class PlotHandler
+ * \brief Class def header for a class CrossSectionCalculator1D
  *
  * @author Marco Del Tutto
  */
@@ -10,8 +10,8 @@
 /** \addtogroup UBXSec
 
     @{*/
-#ifndef PLOTHANDLER_H
-#define PLOTHANDLER_H
+#ifndef CROSSSECTIONCALCULATOR1D_H
+#define CROSSSECTIONCALCULATOR1D_H
 
 #include <iostream>
 #include <sstream>
@@ -56,20 +56,20 @@
 namespace ubana{
   
   /**
-   \class PlotHandler
-   User defined class PlotHandler ... these comments are used to generate
+   \class CrossSectionCalculator1D
+   User defined class CrossSectionCalculator1D ... these comments are used to generate
    doxygen documentation!
  */
 
-  class PlotHandler {
+  class CrossSectionCalculator1D {
     
   public:
     
     /// Default constructor
-    PlotHandler();
+    CrossSectionCalculator1D();
 
     /// Default destructor
-    ~PlotHandler(){}
+    ~CrossSectionCalculator1D(){}
 
     /// Configure function parameters
     void SetScaleFactors(double bnbcosmic, double bnbon, double extbnb, double intimecosmic = 0);
