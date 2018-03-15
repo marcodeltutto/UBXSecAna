@@ -32,7 +32,6 @@ if(!ROOT_FOUND)
     include_directories(${ROOT_INCLUDE_DIRS})
 endif()
 include(${ROOT_USE_FILE})
-#ROOT_GENERATE_DICTIONARY(G__Event ${PROJECT_SOURCE_DIR}/Main/loader.C)
 #add_library(Event SHARED G__Event.cxx)
 #target_link_libraries(Event ${ROOT_LIBRARIES})
 

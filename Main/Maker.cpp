@@ -29,10 +29,11 @@
 #include <TStyle.h>
 #include <TH1D.h>
 
-#include "AnaTree.h"
+#include "UBXSecEvent.h"
 #include "Spectrum.hpp"
 #include "Spectrum2D.hpp"
 #include "PlottingTools.h"
+#include "BootstrapTH1D.h"
 
 const bool _breakdownPlots = true;
 const bool _makePlots = false;
@@ -47,6 +48,8 @@ const double _pe_cut = 10;
 const double targetPOT = 4.95e19;
 
 using namespace std;
+
+using namespace ubana;
 
 //____________________________________________________________________________________________________
 void DrawProgressBar(double progress, double barWidth) {
@@ -94,7 +97,7 @@ void DrawPOT2(double pot, double target = 6.6e20)
 }
 
 //____________________________________________________________________________________________________
-void ActivateBranches(AnaTree *at) {
+void ActivateBranches(UBXSecEvent *at) {
   
   //t->fChain->SetBranchStatus("",1);
 }
@@ -290,7 +293,7 @@ int main(int argc, char* argv[]) {
   int evts = chain_ubxsec -> GetEntries();
   cout << "Number of events used is: " << evts << endl;
   
-  AnaTree * t = new AnaTree(chain_ubxsec);
+  UBXSecEvent * t = new UBXSecEvent(chain_ubxsec);
   ActivateBranches(t);
   
 
@@ -605,6 +608,24 @@ int main(int argc, char* argv[]) {
   hmap_trkmom["nue"] = new TH1D("h_trkmom_nue", "; Track length;", 6, bins_mumom);
   hmap_trkmom["signal_stopmu"] = new TH1D("h_trkmom_signal_stopmu", "; Track length;", 6, bins_mumom);
   hmap_trkmom["signal_nostopmu"] = new TH1D("h_trkmom_signal_nostopmu", "; Track length;", 6, bins_mumom);
+
+  std::map<std::string,BootstrapTH1D*> hmap_trkmom_bs;
+  hmap_trkmom_bs["total"] = new BootstrapTH1D("h_trkmom_total", "; Track length;", 6, bins_mumom); // 20, 0, 2.5
+  hmap_trkmom_bs["signal"] = new BootstrapTH1D("h_trkmom_signal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["cosmic"] = new BootstrapTH1D("h_trkmom_cosmic", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["cosmic_stopmu"] = new BootstrapTH1D("h_trkmom_cosmic_stopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["cosmic_nostopmu"] = new BootstrapTH1D("h_trkmom_cosmic_nostopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["outfv"] = new BootstrapTH1D("h_trkmom_outfv", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["outfv_stopmu"] = new BootstrapTH1D("h_trkmom_outfv_stopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["outfv_nostopmu"] = new BootstrapTH1D("h_trkmom_outfv_nostopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["nc"] = new BootstrapTH1D("h_trkmom_nc", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["nc_proton"] = new BootstrapTH1D("h_trkmom_nc_proton", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["nc_pion"] = new BootstrapTH1D("h_trkmom_nc_pion", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["nc_other"] = new BootstrapTH1D("h_trkmom_nc_other", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["anumu"] = new BootstrapTH1D("h_trkmom_anumu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["nue"] = new BootstrapTH1D("h_trkmom_nue", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["signal_stopmu"] = new BootstrapTH1D("h_trkmom_signal_stopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_bs["signal_nostopmu"] = new BootstrapTH1D("h_trkmom_signal_nostopmu", "; Track length;", 6, bins_mumom);
   
   std::map<std::string,TH1D*> hmap_trkphi;
   hmap_trkphi["total"] = new TH1D("h_trkphi_total", "; Track #phi;", 20, -3.15, 3.15);
@@ -863,10 +884,30 @@ int main(int argc, char* argv[]) {
     }
     
     
+    // ************************
+    //
+    // Set weight names, prepare bootstraps
+    //
+    // ************************
+
+    // Set the weight names, just do it once (first event only)
+    if (i==0) {
+      std::vector<std::string> fname;
+      for (auto name : t->evtwgt_funcname) {
+        fname.push_back(name + "_p1");
+        fname.push_back(name + "_m1");
+      }
+
+      for (auto n : fname) 
+        std::cout << "Function name " << n << std::endl;
+
+      std::cout << "Number of reweighting functions: " << fname.size() << std::endl;
     
-    
-    
-    
+      for (auto iter : hmap_trkmom_bs) {
+        iter.second->SetWeightNames(fname);
+      }
+    }
+      
     
     // VTX before selection
     if(t->slc_nuvtx_x.size()>0) {
@@ -1310,6 +1351,13 @@ int main(int argc, char* argv[]) {
     hmap_multtracktol["total"]->Fill(t->slc_mult_track_tolerance.at(scl_ll_max));
     hmap_trktheta_trkmom["total"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max), t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
 
+    std::vector<double> wgts;
+    for (size_t i = 0; i < t->evtwgt_weight.size(); i++) {
+      wgts.push_back(t->evtwgt_weight.at(i).at(0));
+      wgts.push_back(t->evtwgt_weight.at(i).at(1));
+    }
+    hmap_trkmom_bs["total"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
+
     if (isSignal) h_true_nu_eng_aftersel->Fill(t->nu_e);
 
     if (isSignal) {
@@ -1510,6 +1558,7 @@ int main(int argc, char* argv[]) {
       pEff->Fill(true, t->nu_e);
       hmap_trklen["signal"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["signal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+      hmap_trkmom_bs["signal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
       hmap_trkphi["signal"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["signal"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["signal"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1519,6 +1568,7 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 0) {
         hmap_trklen["signal_stopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["signal_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["signal_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["signal_stopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["signal_stopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["signal_stopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1528,6 +1578,7 @@ int main(int argc, char* argv[]) {
       } else {
         hmap_trklen["signal_nostopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["signal_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["signal_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["signal_nostopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["signal_nostopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["signal_nostopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1543,6 +1594,7 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["anumu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["anumu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+      hmap_trkmom_bs["anumu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
       hmap_trkphi["anumu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["anumu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["anumu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1557,6 +1609,7 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["nue"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["nue"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+      hmap_trkmom_bs["nue"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
       hmap_trkphi["nue"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["nue"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["nue"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1573,6 +1626,7 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["nc"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["nc"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+      hmap_trkmom_bs["nc"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
       hmap_trkphi["nc"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["nc"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["nc"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1582,6 +1636,7 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 3) {
         hmap_trklen["nc_proton"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["nc_proton"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["nc_proton"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["nc_proton"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["nc_proton"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["nc_proton"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1592,6 +1647,7 @@ int main(int argc, char* argv[]) {
       else if (t->slc_origin_extra.at(scl_ll_max) == 2) {
         hmap_trklen["nc_pion"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["nc_pion"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["nc_pion"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["nc_pion"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["nc_pion"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["nc_pion"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1602,6 +1658,7 @@ int main(int argc, char* argv[]) {
       else {
         hmap_trklen["nc_other"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["nc_other"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["nc_other"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["nc_other"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["nc_other"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["nc_other"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1617,6 +1674,7 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["outfv"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["outfv"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+      hmap_trkmom_bs["outfv"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
       hmap_trkphi["outfv"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["outfv"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["outfv"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1626,6 +1684,7 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 0) {
         hmap_trklen["outfv_stopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["outfv_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["outfv_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["outfv_stopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["outfv_stopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["outfv_stopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1651,6 +1710,7 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["cosmic"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["cosmic"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+      hmap_trkmom_bs["cosmic"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
       hmap_trkphi["cosmic"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["cosmic"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["cosmic"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1661,6 +1721,7 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 0) {
         hmap_trklen["cosmic_stopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["cosmic_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["cosmic_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["cosmic_stopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["cosmic_stopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["cosmic_stopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1669,6 +1730,7 @@ int main(int argc, char* argv[]) {
       } else {
         hmap_trklen["cosmic_nostopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["cosmic_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+        hmap_trkmom_bs["cosmic_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
         hmap_trkphi["cosmic_nostopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["cosmic_nostopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["cosmic_nostopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1922,6 +1984,14 @@ int main(int argc, char* argv[]) {
   pEff_mec->SetMarkerStyle(20);
   pEff_mec->SetMarkerSize(0.5);
   pEff_mec->Draw("LP same");
+
+  TLegend* leg_mode = new TLegend(0.1,0.7,0.48,0.9);
+  leg_mode->AddEntry(pEff_qe,"GENIE QE","lep");
+  leg_mode->AddEntry(pEff_res,"GENIE RES","lep");  
+  leg_mode->AddEntry(pEff_dis,"GENIE DIS","lep");  
+  leg_mode->AddEntry(pEff_coh,"GENIE COH","lep");  
+  leg_mode->AddEntry(pEff_mec,"GENIE MEC","lep");  
+  leg_mode->Draw();
 
   temp2 = "./output/efficiency_mode";
   canvas_efficiency_mode->SaveAs(temp2 + ".pdf");
@@ -2445,6 +2515,7 @@ int main(int argc, char* argv[]) {
 
   file_out->WriteObject(&hmap_trklen, "hmap_trklen");
   file_out->WriteObject(&hmap_trkmom, "hmap_trkmom");
+  file_out->WriteObject(&hmap_trkmom_bs, "hmap_trkmom_bs");
   file_out->WriteObject(&hmap_trktheta, "hmap_trktheta");
   file_out->WriteObject(&hmap_trkphi, "hmap_trkphi");
   file_out->WriteObject(&hmap_multpfp, "hmap_multpfp");

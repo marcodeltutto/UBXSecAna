@@ -21,7 +21,7 @@
 #include <TROOT.h>
 #include <TStyle.h>
 
-#include "AnaTree.h"
+#include "UBXSecEvent.h"
 #include "Spectrum.hpp"
 #include "Spectrum2D.hpp"
 #include "PlottingTools.h"
