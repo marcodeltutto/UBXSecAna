@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Tue Mar  6 18:18:22 2018 by ROOT version 6.06/06
+// Wed Mar 14 17:00:13 2018 by ROOT version 6.06/06
 // from TTree tree/
-// found on file: ../files/mcc8.6_stopmu_test/ubxsec_output_mc_bnbcosmic_mcc8.6_stopmu_test22.root
+// found on file: ../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root
 //////////////////////////////////////////////////////////
 
-#ifndef AnaTree_h
-#define AnaTree_h
+#ifndef UBXSecEvent_h
+#define UBXSecEvent_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -16,7 +16,7 @@ using namespace std;
 
 // Header file for the classes stored in the TTree if any.
 
-class AnaTree {
+class UBXSecEvent {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -172,6 +172,10 @@ public :
    vector<double>  tvtx_y;
    vector<double>  tvtx_z;
    Double_t        pot;
+   Int_t           evtwgt_nfunc;
+   vector<string>  evtwgt_funcname;
+   vector<int>     evtwgt_nweight;
+   vector<vector<double> > evtwgt_weight;
    Int_t           _default_value;
 
    // List of branches
@@ -322,10 +326,14 @@ public :
    TBranch        *b_ubxsec_event_split_tvtx_y;   //!
    TBranch        *b_ubxsec_event_split_tvtx_z;   //!
    TBranch        *b_ubxsec_event_split_pot;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_nfunc;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_funcname;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_nweight;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_weight;   //!
    TBranch        *b_ubxsec_event_split__default_value;   //!
 
-   AnaTree(TTree *tree=0);
-   virtual ~AnaTree();
+   UBXSecEvent(TTree *tree=0);
+   virtual ~UBXSecEvent();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
@@ -337,36 +345,36 @@ public :
 
 #endif
 
-#ifdef AnaTree_cxx
-AnaTree::AnaTree(TTree *tree) : fChain(0) 
+#ifdef UBXSecEvent_cxx
+UBXSecEvent::UBXSecEvent(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../files/mcc8.6_stopmu_test/ubxsec_output_mc_bnbcosmic_mcc8.6_stopmu_test22.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("../files/mcc8.6_stopmu_test/ubxsec_output_mc_bnbcosmic_mcc8.6_stopmu_test22.root");
+         f = new TFile("../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("../files/mcc8.6_stopmu_test/ubxsec_output_mc_bnbcosmic_mcc8.6_stopmu_test22.root:/UBXSec");
+      TDirectory * dir = (TDirectory*)f->Get("../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root:/UBXSec");
       dir->GetObject("tree",tree);
 
    }
    Init(tree);
 }
 
-AnaTree::~AnaTree()
+UBXSecEvent::~UBXSecEvent()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t AnaTree::GetEntry(Long64_t entry)
+Int_t UBXSecEvent::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t AnaTree::LoadTree(Long64_t entry)
+Long64_t UBXSecEvent::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -379,7 +387,7 @@ Long64_t AnaTree::LoadTree(Long64_t entry)
    return centry;
 }
 
-void AnaTree::Init(TTree *tree)
+void UBXSecEvent::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -542,11 +550,15 @@ void AnaTree::Init(TTree *tree)
    fChain->SetBranchAddress("tvtx_y", &tvtx_y, &b_ubxsec_event_split_tvtx_y);
    fChain->SetBranchAddress("tvtx_z", &tvtx_z, &b_ubxsec_event_split_tvtx_z);
    fChain->SetBranchAddress("pot", &pot, &b_ubxsec_event_split_pot);
+   fChain->SetBranchAddress("evtwgt_nfunc", &evtwgt_nfunc, &b_ubxsec_event_split_evtwgt_nfunc);
+   fChain->SetBranchAddress("evtwgt_funcname", &evtwgt_funcname, &b_ubxsec_event_split_evtwgt_funcname);
+   fChain->SetBranchAddress("evtwgt_nweight", &evtwgt_nweight, &b_ubxsec_event_split_evtwgt_nweight);
+   fChain->SetBranchAddress("evtwgt_weight", &evtwgt_weight, &b_ubxsec_event_split_evtwgt_weight);
    fChain->SetBranchAddress("_default_value", &_default_value, &b_ubxsec_event_split__default_value);
    Notify();
 }
 
-Bool_t AnaTree::Notify()
+Bool_t UBXSecEvent::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -557,18 +569,18 @@ Bool_t AnaTree::Notify()
    return kTRUE;
 }
 
-void AnaTree::Show(Long64_t entry)
+void UBXSecEvent::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t AnaTree::Cut(Long64_t entry)
+Int_t UBXSecEvent::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef AnaTree_cxx
+#endif // #ifdef UBXSecEvent_cxx

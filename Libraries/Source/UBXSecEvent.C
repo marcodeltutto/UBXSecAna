@@ -1,14 +1,14 @@
-#define AnaTree_cxx
-#include "AnaTree.h"
+#define UBXSecEvent_cxx
+#include "UBXSecEvent.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
 
-void AnaTree::Loop()
+void UBXSecEvent::Loop()
 {
 //   In a ROOT session, you can do:
-//      root> .L AnaTree.C
-//      root> AnaTree t
+//      root> .L UBXSecEvent.C
+//      root> UBXSecEvent t
 //      root> t.GetEntry(12); // Fill t data members with entry number 12
 //      root> t.Show();       // Show values of entry 12
 //      root> t.Show(16);     // Read and show values of entry 16
