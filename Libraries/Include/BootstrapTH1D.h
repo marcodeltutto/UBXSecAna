@@ -14,6 +14,7 @@
 #define BOOTSTRAPTH1D_H
 
 #include <iostream>
+
 #include <sstream>
 #include <fstream>
 #include <string>
@@ -25,7 +26,7 @@
 #include <iomanip>
 #include <map>
 #include <time.h>
-
+/*
 #include <TSystem.h>
 #include <TApplication.h>
 #include <TCanvas.h>
@@ -51,10 +52,13 @@
 #include "TMatrix.h"
 #include "TLine.h"
 #include "TGaxis.h"
-#include "TMatrix.h"
+#include "TMatrix.h"*/
+#include <TH1D.h>
+#include <TObject.h>
 
-#include "Types.h"
-
+//#include "Types.h"
+//#include "TNamed.h"
+//#include "Rtypes.h"
 
 namespace ubana{
   
@@ -64,7 +68,7 @@ namespace ubana{
    doxygen documentation!
  */
 
-  class BootstrapTH1D {
+  class BootstrapTH1D /*: public TObject*/ {
     
   public:
     
@@ -74,8 +78,14 @@ namespace ubana{
     /// Constructor
     BootstrapTH1D(std::string, std::string, int, double*);
 
+    virtual ~BootstrapTH1D();
+
     /// Default destructor
-    ~BootstrapTH1D(){}
+    //~BootstrapTH1D(){}
+
+    //virtual ~BootstrapTH1D(){};
+
+    //virtual ~Parent() {};
 
     ///
     void SetWeightNames(std::vector<std::string>);
@@ -83,7 +93,11 @@ namespace ubana{
     /// Fill the value bin with a general weight and the vector of weights
     void Fill(double, double, std::vector<double>);
 
-  
+    ///
+    TH1D* GetNominal();
+
+    //ClassDef(BootstrapTH1D, 1);
+
   protected:
 
     std::string _name = "[BootstrapTH1D] ";
@@ -91,7 +105,7 @@ namespace ubana{
     std::string _hname; ///< Histogram name
     std::string _title; ///< Histogram title
     int _nbins; ///< Histogram n bins
-    double *_bins; ///< Histogram bins array
+    std::vector<double> _bins; ///< Histogram bins array
 
     std::map<std::string, TH1D*> _hmap; ///< Histogram map ("nominal", "universe1"...)
     size_t _n_weights; ///< Number of weigths to use

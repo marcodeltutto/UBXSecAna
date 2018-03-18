@@ -29,6 +29,7 @@
 #include "MigrationMatrix2D.h"
 #include "MigrationMatrix4D.h"
 #include "CrossSectionCalculator2D.h"
+#include "BootstrapTH1D.h"
 
 
 //const bool _breakdownPlots = true;
@@ -36,6 +37,7 @@
 
 
 using namespace std;
+using namespace ubana;
 
 
 
@@ -116,7 +118,11 @@ int main(int argc, char* argv[]) {
 
   std::string library = ".L " + env + "loader_C.so";
   gROOT->ProcessLine(library.c_str());
-  
+  //library = ".L " + env + "BootstrapTH1D_cxx.so";
+  //gROOT->ProcessLine(library.c_str());
+  //gROOT->ProcessLine(".L /Users/deltutto/RealWork/CCInclusiveEventSelection/ubxsecana/Libraries/Source/BootstrapTH1D.cxx+");
+  //gROOT->ProcessLine(".L /Users/deltutto/RealWork/CCInclusiveEventSelection/ubxsecana/Root/BootstrapTH1D_cxx.so");
+
   int bnbon_total_events = 1000;
   int extbnb_total_events = 1000;
   //int intimecosmic_total_events = 1000;
@@ -243,7 +249,28 @@ int main(int argc, char* argv[]) {
   mc_bnbcosmic_file->GetObject("hmap_dqdx_trunc", temp_map);
   std::map<std::string,TH1D*> hmap_dqdx_trunc_mc = *temp_map;
   TH2D* h_dqdx_trunc_length_mc = (TH2D*)mc_bnbcosmic_file->Get("h_dqdx_trunc_length");
-  
+
+  std::map<std::string,std::map<std::string,TH1D*>>* temp_map_bs;
+  mc_bnbcosmic_file->GetObject("hmap_trkmom_bs", temp_map_bs);
+  std::map<std::string,std::map<std::string,TH1D*>> map_bs = *temp_map_bs;
+
+  new TCanvas();
+  map_bs["total"]["nominal"]->Draw();
+
+  //BootstrapTH1D* temp_bs;
+  //mc_bnbcosmic_file->GetObject("h_eff_mumom_den_bs", temp_bs);
+  //TH1D* h_temp = temp_bs->GetNominal();
+/*
+  std::map<std::string,BootstrapTH1D*>* temp_map_bs;
+  mc_bnbcosmic_file->GetObject("hmap_trkmom_bs", temp_map_bs);
+  std::map<std::string,BootstrapTH1D*> hmap_trkmom_bs_mc = *temp_map_bs;
+  for (auto iter : hmap_trkmom_bs_mc) {
+    std::cout << "MMMMMMM: " << iter.first << std::endl;
+  }
+  //TH1D* h_temp = temp_bs->GetNominal();
+  //h_temp->Draw();
+  //BootstrapTH1D h_eff_mumom_num_bs = *temp_bs;
+*/
   //TH1D* h_trklen_intimecosmic = (TH1D*)mc_intimecosmic_file->Get("h_trklen_total");
   //hmap_trklen_mc["intimecosmic"] = NULL;
   

@@ -1,21 +1,31 @@
 #ifndef BOOTSTRAPTH1D_CXX
 #define BOOTSTRAPTH1D_CXX
 
-#include "BootstrapTH1D.h"
+#include "../Include/BootstrapTH1D.h"
+
+//ClassImp(BootstrapTH1D)
 
 namespace ubana {
 
-  BootstrapTH1D::BootstrapTH1D()
+  BootstrapTH1D::BootstrapTH1D() /*: TObject()*/
   {
   }
 
-  BootstrapTH1D::BootstrapTH1D(std::string name, std::string title, int nbins, double *bins)
+  BootstrapTH1D::BootstrapTH1D(std::string name, std::string title, int nbins, double *bins) /*: TObject()*/
   {
     _hmap["nominal"] = new TH1D(name.c_str(), title.c_str(), nbins, bins);
     _hname = name;
     _title = title;
     _nbins = nbins;
-    _bins = bins; 
+    _bins.resize(nbins);
+    for (size_t i = 0; i < _bins.size(); i++) {
+      _bins.at(i) = bins[i];
+    }
+  }
+
+  BootstrapTH1D::~BootstrapTH1D()
+  {
+     
   }
 
   void BootstrapTH1D::SetWeightNames(std::vector<std::string> names)
@@ -23,8 +33,9 @@ namespace ubana {
 
     _n_weights = names.size();
     _wnames = names;
+    double* bins = &_bins[0];
     for (size_t i = 0; i < _n_weights; i++) {
-      _hmap[names.at(i)] = new TH1D((_hname+names.at(i)).c_str(), _title.c_str(), _nbins, _bins);
+      _hmap[names.at(i)] = new TH1D((_hname+names.at(i)).c_str(), _title.c_str(), _nbins, bins);
     }
     
   }
@@ -46,6 +57,11 @@ namespace ubana {
 
    }
     
+  }
+
+  TH1D* BootstrapTH1D::GetNominal()
+  {
+    return _hmap["nominal"];
   }
 
 
