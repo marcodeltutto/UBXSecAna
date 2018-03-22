@@ -1028,9 +1028,9 @@ namespace ubana {
       int xsec_max_point_bin = xsec_nominal->GetMaximumBin();
 
       //XSec_pmu_percDiff_max[function_name]->GetXaxis()->SetRange(2,8);
-      double uncert = XSec_pmu_percDiff_max[function_name]->GetMaximum();
-      double uncertAtXSecPeak = XSec_pmu_percDiff_max[function_name]->GetBinContent(xsec_max_point_bin);
-      double maxBin = XSec_pmu_percDiff_max[function_name]->GetMaximumBin();
+      //double uncert = XSec_pmu_percDiff_max[function_name]->GetMaximum();
+      //double uncertAtXSecPeak = XSec_pmu_percDiff_max[function_name]->GetBinContent(xsec_max_point_bin);
+      //double maxBin = XSec_pmu_percDiff_max[function_name]->GetMaximumBin();
       //XSec_pmu_percDiff_max[function_name]->GetXaxis()->SetRangeUser(1,10);
 
       // Calulate sqrt(S+B)/S
