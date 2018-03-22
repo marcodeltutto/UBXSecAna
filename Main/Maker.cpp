@@ -11,7 +11,7 @@
 #include <getopt.h>
 #include <fstream>
 #include <math.h>
-
+#include <algorithm>
 
 #include <TRandom1.h>
 #include <TSystem.h>
@@ -311,8 +311,11 @@ int main(int argc, char* argv[]) {
   //*************************
   //* Starting ROOT application
   //*************************
-
-  std::string env = std::getenv("UBXSecAnaRoot");
+  std::cout << "here" << std::endl;
+  const char * env_ch = std::getenv("UBXSecAnaRoot");
+  std::cout << "here" << std::endl;
+  std::string env(env_ch);
+  std::cout << "here" << std::endl;
   
   //TApplication* rootapp = new TApplication("ROOT Application",&argc, argv);
   gROOT->SetBatch(kTRUE);
@@ -921,7 +924,7 @@ int main(int argc, char* argv[]) {
       if (std::count (event_numbers.begin(), event_numbers.end(), t->event) > 1) {
 
         // Now check the subrun
-        for (int i_ev = 0; i_ev < event_numbers.size(); i_ev++) {
+        for (size_t i_ev = 0; i_ev < event_numbers.size(); i_ev++) {
           if (event_numbers.at(i_ev) == t->event) {
 
             if (run_numbers.at(i_ev) == t->run && subrun_numbers.at(i_ev) == t->subrun) {
