@@ -3,13 +3,18 @@
 This code take 3 input ROOT files that are produced by the UBXSec code in https://github.com/marcodeltutto/UBXSec. First, a `Maker` is run, which runs the event selection on all of them and produces a light ROOT file with histograms of relevant variables. Then, the `Analyse` is run which takes all these produced histograms and combines them to make the data/MC distributions. It also performs the cross section measurment and handles systematics.
 
 ## Build and Install
+On uboonegpvm:
 ```
+source /grid/fermiapp/products/uboone/setup_uboone.sh
+setup uboonecode v06_26_01_12 -q e10:prof
+
 git clone git@github.com:marcodeltutto/UBXSecAna.git
 cd UBXSecAna
-source setup.sh
-scp -r mdeltutt@uboonegpvm02.fnal.gov:/uboone/data/users/mdeltutt/ubxsec_static/mcc8.7_test/*test1.root Files/
+git checkout linux
+
+bash setup.sh
 cd Build
-cmake ..
+cmake -DCMAKE_CXX_COMPILER=/cvmfs/larsoft.opensciencegrid.org/products/gcc/v4_9_3a/Linux64bit+2.6-2.12/bin/g++ ..
 make install
 ```
 
