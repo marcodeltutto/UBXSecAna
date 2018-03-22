@@ -7,6 +7,7 @@ namespace ubana {
 
   MigrationMatrix4D::MigrationMatrix4D()
   {
+    stystem("mkdir -p " + _folder);
   }
 
 
@@ -156,7 +157,7 @@ namespace ubana {
         sstm << "smearing_matrix_true_" << m << "_" << n;
 
 
-        TString name = sstm.str();
+        TString name = _folder + sstm.str();
         c->SaveAs(name + ".pdf");
         c->SaveAs(name + ".C","C");
       }
@@ -266,7 +267,7 @@ namespace ubana {
     */
 
 
-    TString name = "full_smearing_matrix_4d";
+    TString name = _folder + "full_migration_matrix_4d";
     c_sm->SaveAs(name + ".pdf");
     c_sm->SaveAs(name + ".C","C");
 

@@ -7,6 +7,7 @@ namespace ubana {
 
   MigrationMatrix2D::MigrationMatrix2D()
   {
+    stystem("mkdir -p " + _folder);
   }
 
   void MigrationMatrix2D::SetOutputFileName(std::string name) 
@@ -115,7 +116,7 @@ namespace ubana {
     smearing_matrix_histo->GetYaxis()->SetTitle("Reco Bin i");
 
     smearing_matrix_histo->Draw("col TEXT");
-    TString name = _folder +_name + "smearing_matrix_2d";
+    TString name = _folder + "migration_matrix_2d";
     c_smatrix->SaveAs(name + ".pdf");
 
   }
