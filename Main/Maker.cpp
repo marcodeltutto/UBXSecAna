@@ -38,6 +38,7 @@
 const bool _breakdownPlots = true;
 const bool _makePlots = false;
 const bool _fill_bootstrap = false;
+const bool _check_duplicate_events = false;
 
 double _beamSpillStarts = 3.2;  // us
 double _beamSpillEnds   = 4.8;  // us
@@ -898,7 +899,9 @@ int main(int argc, char* argv[]) {
   int total_events = 0;
 
   std::vector<int> run_numbers, subrun_numbers, event_numbers;
-  run_numbers.resize(evts); subrun_numbers.resize(evts); event_numbers.resize(evts);
+  if (_check_duplicate_events) {
+    run_numbers.resize(evts); subrun_numbers.resize(evts); event_numbers.resize(evts);
+  }
   
   for(int i = 0; i < evts; i++) {
     
@@ -912,19 +915,21 @@ int main(int argc, char* argv[]) {
     //cout << "***** Event Number " << t->event << endl;
 
     // Check for duplicate MC events
-    run_numbers.at(i) = t->run;
-    subrun_numbers.at(i) = t->subrun;
-    event_numbers.at(i) = t->event;
-    if (std::count (event_numbers.begin(), event_numbers.end(), t->event) > 1) {
+    if (_check_duplicate_events){
+      run_numbers.at(i) = t->run;
+      subrun_numbers.at(i) = t->subrun;
+      event_numbers.at(i) = t->event;
+      if (std::count (event_numbers.begin(), event_numbers.end(), t->event) > 1) {
 
-      // Now check the subrun
-      for (int i_ev = 0; i_ev < event_numbers.size(); i_ev++) {
-        if (event_numbers.at(i_ev) == t->event) {
+        // Now check the subrun
+        for (int i_ev = 0; i_ev < event_numbers.size(); i_ev++) {
+          if (event_numbers.at(i_ev) == t->event) {
 
-          if (run_numbers.at(i_ev) == t->run && subrun_numbers.at(i_ev) == t->subrun) {
-            std::cout << "Found duplicate event: " << t->event << std::endl;
+            if (run_numbers.at(i_ev) == t->run && subrun_numbers.at(i_ev) == t->subrun) {
+              std::cout << "Found duplicate event: " << t->event << std::endl;
+            }
+            break;
           }
-          break;
         }
       }
     }
