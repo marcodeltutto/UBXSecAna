@@ -41,7 +41,7 @@
 using namespace std;
 using namespace ubana;
 
-const bool _calculate_xsec = false;
+const bool _calculate_xsec = true;
 const bool _do_pm1sigma_plots = false;
 const bool _do_reweighting_plots = false;
 
@@ -63,6 +63,7 @@ int main(int argc, char* argv[]) {
   double bnbon_triggers        = -1;
   double extbnb_triggers       = -1;
 
+  system("mkdir -p output_data_mc/");
   
   int opt;
   while ((opt = getopt (argc, argv, "m:c:b:e:p:n:g:")) != -1)
@@ -121,8 +122,9 @@ int main(int argc, char* argv[]) {
   //gROOT->SetBatch(kTRUE);
   gROOT->ProcessLine("gErrorIgnoreLevel = 2001;"); // 1001: INFO, 2001: WARNINGS, 3001: ERRORS
 
-  std::string library = ".L " + env + "rootlogon.C";
+  std::string library = ".x " + env + "rootlogon.C";
   gROOT->ProcessLine(library.c_str());
+  //gROOT->ProcessLine(".x ~/rootlogon.C");
 
   library = ".L " + env + "loader_C.so";
   gROOT->ProcessLine(library.c_str());
