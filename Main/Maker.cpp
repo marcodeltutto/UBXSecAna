@@ -206,7 +206,9 @@ int main(int argc, char* argv[]) {
   std::ofstream _csvfile;
   _csvfile.open ("dqdx_trklen.csv", std::ofstream::out | std::ofstream::trunc);
   _csvfile << "dqdx,trklen,y" << std::endl;
-  
+
+
+  system("mkdir -p output/");  
 
   //*************************
   //* Getting input parameters
@@ -924,9 +926,6 @@ int main(int argc, char* argv[]) {
         }
       }
     }
-    if (t->event == 258201) {
-      std::cout << "On event 258201, " << "run: " << t->run << ", subrun: " << t->subrun << std::endl;
-    }
 
 
 
@@ -946,10 +945,10 @@ int main(int argc, char* argv[]) {
         fname.push_back(name + "_m1");
       }
 
-      for (auto n : fname) 
-        std::cout << "Function name " << n << std::endl;
+      //for (auto n : fname) 
+        //std::cout << "Function name " << n << std::endl;
 
-      std::cout << "Number of reweighting functions: " << fname.size() << std::endl;
+      //std::cout << "Number of reweighting functions: " << fname.size() << std::endl;
 
 
       // Number of events
