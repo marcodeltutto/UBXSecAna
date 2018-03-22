@@ -115,7 +115,7 @@ namespace ubana{
 
     bool _verbose = false;
 
-    std::string _folder = "MigrationMatrix4D/";
+    std::string _folder = "MigrationMatrix4DPlots/";
 
     
   };

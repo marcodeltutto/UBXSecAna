@@ -7,7 +7,8 @@ namespace ubana {
 
   MigrationMatrix2D::MigrationMatrix2D()
   {
-    stystem("mkdir -p " + _folder);
+    std::string command = "mkdir -p " + _folder;
+    std::system(command.c_str());
   }
 
   void MigrationMatrix2D::SetOutputFileName(std::string name) 

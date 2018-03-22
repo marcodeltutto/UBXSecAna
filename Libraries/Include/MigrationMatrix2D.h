@@ -111,7 +111,7 @@ namespace ubana{
 
     std::ofstream _f_out; ///< The output file
 
-    std::string _folder = "MigrationMatrix2DPlots";
+    std::string _folder = "MigrationMatrix2DPlots/";
 
     bool _verbose = false;
 

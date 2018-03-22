@@ -7,7 +7,9 @@ namespace ubana {
 
   MigrationMatrix4D::MigrationMatrix4D()
   {
-    stystem("mkdir -p " + _folder);
+    std::string command = "mkdir -p " + _folder;
+    std::system(command.c_str());
+ 
   }
 
 
