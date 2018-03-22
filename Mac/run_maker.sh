@@ -1,12 +1,12 @@
 #! /bin/bash
 
-Maker --filename ../Files/mcc8.7_test/ubxsec_output_mc_bnbcosmic_mcc8.7_test1.root --maxentries -1 --flashstart 3.2 --flashend 4.8 -g 198 -p
+Maker --filename ../Files/ubxsec_output_mc_bnbcosmic_mcc8.7_test1.root --maxentries -1 --flashstart 3.2 --flashend 4.8 -g 198 -p
 mv ubxsecana_output.root ubxsecana_output_bnbcosmic_mcc8.7_test1.root
 
-Maker --filename ../Files/mcc8.7_test/ubxsec_output_data_bnbon_mcc8.7_test1.root --maxentries -1 --flashstart 3.3 --flashend 4.9 -g 243 -d
+Maker --filename ../Files/ubxsec_output_data_bnbon_mcc8.7_test1.root --maxentries -1 --flashstart 3.3 --flashend 4.9 -g 243 -d
 mv ubxsecana_output.root ubxsecana_output_bnbon_mcc8.7_test1.root
 
-Maker --filename ../Files/mcc8.7_test/ubxsec_output_data_extbnb_mcc8.7_test1.root --maxentries -1 --flashstart 3.65 --flashend 5.25 -s 0.406 -g 243 -d
+Maker --filename ../Files/ubxsec_output_data_extbnb_mcc8.7_test1.root --maxentries -1 --flashstart 3.65 --flashend 5.25 -s 0.406 -g 243 -d
 mv ubxsecana_output.root ubxsecana_output_extbnb_mcc8.7_test1.root
 
 

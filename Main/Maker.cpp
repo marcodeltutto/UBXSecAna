@@ -203,14 +203,13 @@ int main(int argc, char* argv[]) {
   bool evalPOT          = false;
   int maxEntries        = -1;
   bool isdata           = false;
+
+  system("mkdir -p output/");
   
   // CSV file for dqdx and track lenght values
   std::ofstream _csvfile;
-  _csvfile.open ("dqdx_trklen.csv", std::ofstream::out | std::ofstream::trunc);
+  _csvfile.open ("output/dqdx_trklen.csv", std::ofstream::out | std::ofstream::trunc);
   _csvfile << "dqdx,trklen,y" << std::endl;
-
-
-  system("mkdir -p output/");  
 
 
   //*************************

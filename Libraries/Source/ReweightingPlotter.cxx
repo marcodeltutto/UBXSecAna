@@ -1025,7 +1025,7 @@ namespace ubana {
       }
 
       // Find the bin where the cross-section in bigger
-      int xsec_max_point_bin = xsec_nominal->GetMaximumBin();
+      //int xsec_max_point_bin = xsec_nominal->GetMaximumBin();
 
       //XSec_pmu_percDiff_max[function_name]->GetXaxis()->SetRange(2,8);
       //double uncert = XSec_pmu_percDiff_max[function_name]->GetMaximum();
