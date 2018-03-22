@@ -940,7 +940,7 @@ int main(int argc, char* argv[]) {
 
     // Set the weight names, just do it once (first event only)
     
-    if (i==0 && !isdata) {
+    if (i==0 && !isdata && _fill_bootstrap) {
 
       for (auto name : t->evtwgt_funcname) {
         fname.push_back(name + "_p1");
@@ -986,7 +986,7 @@ int main(int argc, char* argv[]) {
 
     // Prepare the vector of weights to be used for bootstraps
     std::vector<double> wgts;
-    if (!isdata) {
+    if (!isdata && _fill_bootstrap) {
       for (size_t i = 0; i < t->evtwgt_weight.size(); i++) {
         wgts.push_back(t->evtwgt_weight.at(i).at(0));
         wgts.push_back(t->evtwgt_weight.at(i).at(1));
