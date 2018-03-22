@@ -24,3 +24,4 @@ source analyse.sh    # Runs the Analyse on the three lighter files produced by t
 ## How to change the selection in order to make validation plots
 To add or remove a cut, open Main/Maker.cxx. A list of cuts is around line 1460. Line 1460 is commented out and show an example of an additional cut. If uncommented, the selection will select only contained tracks.
 Then recompile in the Build directory with just `make install`, and run again the Maker and the Analyse.
+Variables are documented here: https://marcodeltutto.github.io/UBXSec/documentation/html/classUBXSecEvent.html
