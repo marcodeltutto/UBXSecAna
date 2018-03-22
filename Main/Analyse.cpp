@@ -41,9 +41,9 @@
 using namespace std;
 using namespace ubana;
 
-const bool _calculate_xsec = true;
-const bool _do_pm1sigma_plots = true;
-const bool _do_reweighting_plots = true;
+const bool _calculate_xsec = false;
+const bool _do_pm1sigma_plots = false;
+const bool _do_reweighting_plots = false;
 
 
 
