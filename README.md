@@ -1,5 +1,7 @@
 # UBXSecAna
 
+This code take 3 input ROOT files that are produced by the UBXSec code in https://github.com/marcodeltutto/UBXSec. First, a `Maker` is run, which runs the event selection on all of them and produces a light ROOT file with histograms of relevant variables. Then, the `Analyse` is run which takes all these produced histograms and combines them to make the data/MC distributions. It also performs the cross section measurment and handles systematics.
+
 ## Build and Install
 ```
 git clone git@github.com:marcodeltutto/UBXSecAna.git
@@ -15,6 +17,6 @@ make install
 Scripts to run are in `UBXSecAna/Mac/*`.
 ```
 cd UBXSecAna/Mac
-source run_maker.sh
-source analyse.sh
+source run_maker.sh  # Runs the Makes on the three input files downloaded above
+source analyse.sh    # Runs the Analyse on the three lighter files produced by the Makes
 ```
