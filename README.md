@@ -7,10 +7,16 @@ On uboonegpvm:
 ```
 source /grid/fermiapp/products/uboone/setup_uboone.sh
 setup uboonecode v06_26_01_12 -q e10:prof
+setup cmake v3_10_1
 
 git clone git@github.com:marcodeltutto/UBXSecAna.git
 cd UBXSecAna
 git checkout linux
+
+export PATH=`pwd`/Bin:${PATH}
+export UBXSecAnaRoot=`pwd`/Root/
+export UBXSecAnaFluxFile=`pwd`/Flux/numode_bnb_470m_r200.root
+export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:`pwd`/Build/Libraries/Source/
 
 bash setup.sh
 cd Build
