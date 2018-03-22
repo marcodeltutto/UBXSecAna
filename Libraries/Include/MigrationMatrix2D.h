@@ -113,6 +113,8 @@ namespace ubana{
 
     std::string _folder = "";
 
+    bool _verbose = false;
+
     
   };
 }

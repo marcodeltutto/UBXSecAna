@@ -113,6 +113,8 @@ namespace ubana{
 
     std::ofstream _f_out; ///< The output file
 
+    bool _verbose = false;
+
     
   };
 }

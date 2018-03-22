@@ -90,6 +90,24 @@ namespace ubana{
     ///
     void SetWeightNames(std::vector<std::string>);
 
+    ///
+    void SetAllHistograms(std::map<std::string,TH1D*>);
+
+    ///
+    int GetNbinsX();
+
+    ///
+    int GetNUniverses();
+
+    ///
+    void ResetIterator();
+
+    ///
+    bool NextUniverse(std::string & uni_name, TH1D & uni_histo);
+
+    ///
+    std::map<std::string, std::vector<TH1D*>> UnpackPMHisto();
+
     /// Fill the value bin with a general weight and the vector of weights
     void Fill(double, double, std::vector<double>);
 
@@ -111,6 +129,8 @@ namespace ubana{
     size_t _n_weights; ///< Number of weigths to use
     std::vector<double> _weights; ///< Weigths to use
     std::vector<std::string>_wnames; ///< Weight names
+
+    std::map<std::string, TH1D*>::iterator _current_iterator = _hmap.begin();
 
     
   };

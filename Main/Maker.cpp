@@ -40,10 +40,10 @@ const bool _makePlots = false;
 
 double _beamSpillStarts = 3.2;  // us
 double _beamSpillEnds   = 4.8;  // us
-double _flashShift      = 0.;//4.06; //us
-double _gainCalib       = 198; // e-/ADC
+double _flashShift      = 0.;   //4.06; //us
+double _gainCalib       = 198;  // e-/ADC
 
-const double _pe_cut = 10;
+const double _pe_cut = 50;
 
 const double targetPOT = 4.95e19;
 
@@ -144,6 +144,49 @@ void FillBootstrap(double fill_value,
 } 
 
 
+//___________________________________________________________________________________________________
+void FillBootstrap(double fill_value,
+                   std::map<std::string,TH1D*> hmap_trkmom_bs, 
+                   std::vector<std::string> fname, 
+                   std::vector<double> wgts) {
+
+
+  hmap_trkmom_bs["nominal"]->Fill(fill_value);
+
+  for (size_t i = 0; i < fname.size(); i++) {
+
+    hmap_trkmom_bs[fname.at(i)]->Fill(fill_value, wgts.at(i));
+
+    //std::cout << "Fill value: " << fill_value << ", weight: " << wgts.at(i) << std::endl;
+
+  }
+
+
+} 
+
+
+//___________________________________________________________________________________________________
+void FillBootstrap(double fill_value1,
+                   double fill_value2,
+                   std::map<std::string,TH2D*> hmap_trkmom_bs, 
+                   std::vector<std::string> fname, 
+                   std::vector<double> wgts) {
+
+
+  hmap_trkmom_bs["nominal"]->Fill(fill_value1, fill_value2);
+
+  for (size_t i = 0; i < fname.size(); i++) {
+
+    hmap_trkmom_bs[fname.at(i)]->Fill(fill_value1, fill_value2, wgts.at(i));
+
+    //std::cout << "Fill value: " << fill_value << ", weight: " << wgts.at(i) << std::endl;
+
+  }
+
+
+} 
+
+
 
 //____________________________________________________________________________________________________
 //____________________________________________________________________________________________________
@@ -152,24 +195,24 @@ int main(int argc, char* argv[]) {
   
   clock_t begin = clock();
 
-  fprintf(stdout, "%s Version %d.%d\n", argv[0], UBXSecAna_VERSION_MAJOR,
-            UBXSecAna_VERSION_MINOR);
+  fprintf(stdout, "%s Version %d.%d\n", argv[0], UBXSecAna_VERSION_MAJOR, UBXSecAna_VERSION_MINOR);
   
   std::string filen     = "ubxsec_output.root";
-  bool evalPOT = false;
-  int maxEntries = -1;
-  bool isdata = false;
+  bool evalPOT          = false;
+  int maxEntries        = -1;
+  bool isdata           = false;
   
+  // CSV file for dqdx and track lenght values
   std::ofstream _csvfile;
   _csvfile.open ("dqdx_trklen.csv", std::ofstream::out | std::ofstream::trunc);
   _csvfile << "dqdx,trklen,y" << std::endl;
   
+
   //*************************
   //* Getting input parameters
   //*************************
   
   int c;
-  //int digit_optind = 0;
   
   while (1) {
     //int this_option_optind = optind ? optind : 1;
@@ -270,17 +313,14 @@ int main(int argc, char* argv[]) {
   //TApplication* rootapp = new TApplication("ROOT Application",&argc, argv);
   gROOT->SetBatch(kTRUE);
   gROOT->ProcessLine("gErrorIgnoreLevel = 2001;"); // 1001: INFO, 2001: WARNINGS, 3001: ERRORS
-  gROOT->ProcessLine(".x ~/rootlogon.C");
 
-  std::string library = ".L " + env + "loader_C.so";
-  //gROOT->ProcessLine(library.c_str());
+  std::string library = ".L " + env + "rootlogon.C";
+  gROOT->ProcessLine(library.c_str());
+ 
+  library = ".L " + env + "loader_C.so";
   library = ".L " + env + "loader.C+";
   gROOT->ProcessLine(library.c_str());
-  //gROOT->ProcessLine(".L /Users/deltutto/RealWork/CCInclusiveEventSelection/ubxsecana/Libraries/Include/BootstrapTH1D.h+");
-  //gROOT->ProcessLine(".L ../../Root/loader_C.so");
-  //gROOT->ProcessLine(".L /usr/local/lib/libMyTest_rdict.pcm");
-  //gROOT->ProcessLine(".L /Users/deltutto/RealWork/CCInclusiveEventSelection/ubxsecana_build/Libraries/Source/libBootstrapTH1DClass.dylib");
-  //gSystem->Load("libBootstrapTH1DClass.dylib");
+
 
   std::cout << "Opening output file ubxsecana_output.root." << std::endl;
   TFile *file_out = new TFile("ubxsecana_output.root","RECREATE");
@@ -437,6 +477,9 @@ int main(int argc, char* argv[]) {
 
   TH2D * h_true_reco_mom= new TH2D("h_true_reco_mom", ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, bins_mumom, 6, bins_mumom);
 
+  std::map<std::string,TH2D*> bs_true_reco_mom;
+  bs_true_reco_mom["nominal"] = new TH2D("bs_true_reco_mom_nominal", ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, bins_mumom, 6, bins_mumom);
+
   double bins_mucostheta[10] = {-1.00, -0.50, 0.00, 0.27, 0.45, 0.62, 0.76, 0.86, 0.94, 1.00};
 
   TH2D * h_true_reco_costheta= new TH2D("h_true_reco_costheta", ";Muon cos(#theta) (Truth) [GeV]; Muon cos(#theta) (MCS) [GeV]", 9, bins_mucostheta, 9, bins_mucostheta);
@@ -458,6 +501,10 @@ int main(int argc, char* argv[]) {
 
   //BootstrapTH1D* h_eff_mumom_num_bs = new BootstrapTH1D("h_eff_mumom_num_bs", "h_eff_mumom_num_bs", 6, bins_mumom);
   //BootstrapTH1D* h_eff_mumom_den_bs = new BootstrapTH1D("h_eff_mumom_den_bs", "h_eff_mumom_den_bs", 6, bins_mumom);
+  std::map<std::string, TH1D*> bs_eff_mumom_num;
+  bs_eff_mumom_num["nominal"] = new TH1D("h_eff_mumom_num", "h_eff_mumom_num", 6, bins_mumom);
+  std::map<std::string, TH1D*> bs_eff_mumom_den;
+  bs_eff_mumom_den["nominal"] = new TH1D("h_eff_mumom_den", "h_eff_mumom_den", 6, bins_mumom);
 
   TH1D* h_eff_mult_num = new TH1D("h_eff_mult_num", "h_eff_mult_num", 20, 0, 20);
   TH1D* h_eff_mult_den = new TH1D("h_eff_mult_den", "h_eff_mult_den", 20, 0, 20);
@@ -845,6 +892,9 @@ int main(int argc, char* argv[]) {
   if(maxEntries > 0.) evts = maxEntries;
   
   int total_events = 0;
+
+  std::vector<int> run_numbers, subrun_numbers, event_numbers;
+  run_numbers.resize(evts); subrun_numbers.resize(evts); event_numbers.resize(evts);
   
   for(int i = 0; i < evts; i++) {
     
@@ -852,14 +902,31 @@ int main(int argc, char* argv[]) {
     
     chain_ubxsec->GetEntry(i);
     
-    
-    //if (t->run > 5804 && t->run < 5886)
-    //  continue;
-    
     total_events ++;
     
     //cout << "***** Event " << i << endl;
     //cout << "***** Event Number " << t->event << endl;
+
+    // Check for duplicate MC events
+    run_numbers.at(i) = t->run;
+    subrun_numbers.at(i) = t->subrun;
+    event_numbers.at(i) = t->event;
+    if (std::count (event_numbers.begin(), event_numbers.end(), t->event) > 1) {
+
+      // Now check the subrun
+      for (int i_ev = 0; i_ev < event_numbers.size(); i_ev++) {
+        if (event_numbers.at(i_ev) == t->event) {
+
+          if (run_numbers.at(i_ev) == t->run && subrun_numbers.at(i_ev) == t->subrun) {
+            std::cout << "Found duplicate event: " << t->event << std::endl;
+          }
+          break;
+        }
+      }
+    }
+    if (t->event == 258201) {
+      std::cout << "On event 258201, " << "run: " << t->run << ", subrun: " << t->subrun << std::endl;
+    }
 
 
 
@@ -885,6 +952,7 @@ int main(int argc, char* argv[]) {
       std::cout << "Number of reweighting functions: " << fname.size() << std::endl;
 
 
+      // Number of events
       for (auto iter : hmap_trkmom_bs) {
 
         std::string this_name = iter.first;
@@ -900,16 +968,22 @@ int main(int argc, char* argv[]) {
         }
 
       }
-    
-      //for (auto iter : hmap_trkmom_bs) {
-        //iter.second->SetWeightNames(fname);
-      //}
 
-      //h_eff_mumom_num_bs->SetWeightNames(fname);
-      //h_eff_mumom_den_bs->SetWeightNames(fname);
+      // Efficiency
+      for (size_t i = 0; i < fname.size(); i++) {
+        double this_bins_mumom[7] = {0.00, 0.18, 0.30, 0.45, 0.77, 1.28, 2.50};
+        std::string histo_name = "bs_eff_mumom_num_" + fname.at(i);
+        bs_eff_mumom_num[fname.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
+        histo_name = "bs_eff_mumom_den_" + fname.at(i);
+        bs_eff_mumom_den[fname.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
+
+        histo_name = "bs_true_reco_mom_" + fname.at(i);
+        bs_true_reco_mom[fname.at(i)] = new TH2D(histo_name.c_str(), ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, this_bins_mumom, 6, this_bins_mumom);
+      }
+      
     }
 
-    // Prepare the vector of weights to be used for bootsraps
+    // Prepare the vector of weights to be used for bootstraps
     std::vector<double> wgts;
     if (!isdata) {
       for (size_t i = 0; i < t->evtwgt_weight.size(); i++) {
@@ -950,7 +1024,7 @@ int main(int argc, char* argv[]) {
     bool isNueCCFV = false;
     if (t->nupdg == 12 && t->ccnc == 0 && t->fv == 1) {
       isNueCCFV = true;
-      nue_cc_fv+=1;//t->bnb_weight;
+      nue_cc_fv+=t->bnb_weight;
     }
     bool isNue = false;
     if (t->nupdg == 12) {
@@ -964,6 +1038,7 @@ int main(int argc, char* argv[]) {
       
       h_eff_den->Fill(t->nu_e);
       h_eff_mumom_den->Fill(t->true_muon_mom);
+      if (!isdata) FillBootstrap(t->true_muon_mom, bs_eff_mumom_den, fname, wgts);
       //h_eff_mumom_den_bs->Fill(t->true_muon_mom, 1., wgts);
       h_eff_muangle_den->Fill(t->lep_costheta);
       h_eff_muangle_mumom_den->Fill(t->lep_costheta, t->true_muon_mom);
@@ -1035,8 +1110,6 @@ int main(int argc, char* argv[]) {
     if (isSignal) h_vtx_resolution->Fill(t->vtx_resolution);
     
     
-    
-    //int n_acpt_tagged_per_event = 0;
     for (int slc = 0; slc < t->nslices; slc ++) {
       
       if (t->slc_origin.at(slc) == 0 || t->slc_origin.at(slc) == 2) {
@@ -1047,31 +1120,18 @@ int main(int argc, char* argv[]) {
         h_slice_ntrack_others->Fill(t->slc_ntrack.at(slc));
       }
       
-      /*if (isSignal) {
-        if (t->slc_origin.at(slc) == 0 || t->slc_origin.at(slc) == 2) {
-          h_fm_score->Fill(t->slc_flsmatch_score.at(slc));
-          h_fm_score_pe->Fill(t->slc_flsmatch_score.at(slc), t->beamfls_pe.at(flashInBeamSpill));
-        } else {
-          h_fm_score_others->Fill(t->slc_flsmatch_score.at(slc));
-        }
-        
-      }*/
+
       
       if (t->slc_origin.at(slc) == 0) h_slice_origin->Fill(2);
       if (t->slc_origin.at(slc) == 1) h_slice_origin->Fill(0);
       if (t->slc_origin.at(slc) == 2) h_slice_origin->Fill(1);
       
-      //if (t->slc_acpt_outoftime.at(slc) == 1) n_acpt_tagged_per_event++;
       
       if ((t->slc_origin.at(slc) == 0 || t->slc_origin.at(slc) == 2) && t->fv == 1) {
         n_slc_nu_origin ++;
-        //if (t->slc_acpt_outoftime.at(slc) == 1) {
-        //n_slc_acpt_tag_nu ++;
-        //std::cout << "A neutrino was acpt tagged in event " << t->event << std::endl;
-        //}
+        
       }
     }
-    //h_acpt_tagged->Fill(n_acpt_tagged_per_event);
     
     
     
@@ -1089,11 +1149,11 @@ int main(int argc, char* argv[]) {
     //
     //  Selection
     //
-    // ************************
+    // ***********************
+
 
     if (isSignal) selected_signal_events_percut["initial"]++;
     selected_events_percut["initial"]++;
-
     
     
     //
@@ -1107,6 +1167,7 @@ int main(int argc, char* argv[]) {
     double old_pe = -1;
     
     for (int fls = 0; fls < t->nbeamfls; fls ++){
+
       h_flsTime->Fill(t->beamfls_time.at(fls) - _flashShift);
       if(t->beamfls_pe.at(fls) > _pe_cut) {
         h_flsTime_wcut->Fill(t->beamfls_time.at(fls) - _flashShift);
@@ -1144,10 +1205,11 @@ int main(int argc, char* argv[]) {
     
 
     
-  
-    // Slice loop
+    //
+    // Loop over TPC Events - Preliminary plots with only the flash cut applied
+    //
+
     for (int slc = 0; slc < t->nslices; slc ++) {
-      
       
       bool nu_origin = (t->slc_origin.at(slc) == 0 || t->slc_origin.at(slc) == 2);
       
@@ -1257,7 +1319,10 @@ int main(int argc, char* argv[]) {
       
     int n_slc_flsmatch = 0;
     
+    //
     // Find slice with maximum score
+    //
+
     double score_max = -1;
     int scl_ll_max = -1;
     for (int slc = 0; slc < t->nslices; slc ++){
@@ -1275,6 +1340,7 @@ int main(int argc, char* argv[]) {
     h_n_slc_flsmatch->Fill(n_slc_flsmatch);
     
     
+    // In no flash-matched object, continue
     if (scl_ll_max == -1) continue;
     
     
@@ -1285,6 +1351,7 @@ int main(int argc, char* argv[]) {
     
     if (isSignal && nu_origin) nSignalFlashMatched ++;
 
+    // A score < 3e-4 or inf means no flash-matched object, continue
     if (score_max <= 3e-4) continue;
     if (std::isinf(score_max)) continue;
 
@@ -1299,7 +1366,7 @@ int main(int argc, char* argv[]) {
     h_deltaz_4->Fill(t->slc_flsmatch_hypoz.at(scl_ll_max) - t->beamfls_z.at(flashInBeamSpill));
     
 
-    
+    // If it doens't pass the flash-match deltaX cut, continue
     if(t->slc_flsmatch_qllx.at(scl_ll_max) - t->slc_flsmatch_tpcx.at(scl_ll_max) > 50) continue;
     
     h_flsTime_wcut_5->Fill(t->beamfls_time.at(flashInBeamSpill) - _flashShift);
@@ -1312,6 +1379,7 @@ int main(int argc, char* argv[]) {
     h_flsTime_wcut_6->Fill(t->beamfls_time.at(flashInBeamSpill) - _flashShift);
     h_deltaz_6->Fill(t->slc_flsmatch_hypoz.at(scl_ll_max) - t->beamfls_z.at(flashInBeamSpill));
     
+    // If it doens't pass the flash-match deltaZ cut, continue
     if(t->slc_flsmatch_hypoz.at(scl_ll_max) - t->beamfls_z.at(flashInBeamSpill) > 75) continue;
     
     h_flsTime_wcut_7->Fill(t->beamfls_time.at(flashInBeamSpill) - _flashShift);
@@ -1328,15 +1396,16 @@ int main(int argc, char* argv[]) {
     double dqdx_calib = t->slc_muoncandidate_dqdx_trunc.at(scl_ll_max) * _gainCalib;
   
 
-    if(t->slc_vtxcheck_angle.at(scl_ll_max) > 2.9) continue;
+    //m if(t->slc_vtxcheck_angle.at(scl_ll_max) > 2.9) continue;
     
     //if(t->slc_vtxcheck_angle.at(scl_ll_max) < 0.05 && t->slc_vtxcheck_angle.at(scl_ll_max) !=-9999 ) continue;
     
+    // If zero tracks in this tpcobject, continue
     if(t->slc_ntrack.at(scl_ll_max) == 0) continue;
     
-    if(!t->slc_passed_min_track_quality.at(scl_ll_max)) continue;
+    //if(!t->slc_passed_min_track_quality.at(scl_ll_max)) continue;
     
-    if(!t->slc_passed_min_vertex_quality.at(scl_ll_max)) continue;
+    //if(!t->slc_passed_min_vertex_quality.at(scl_ll_max)) continue;
 
     if (isSignal && nu_origin) selected_signal_events_percut["quality"]++;
     selected_events_percut["quality"]++;
@@ -1348,11 +1417,8 @@ int main(int argc, char* argv[]) {
     if (isSignal && nu_origin) selected_signal_events_percut["mcs_length_quality"]++;
     selected_events_percut["mcs_length_quality"]++;
 
-    //if(dqdx_calib > 70000) continue;
-    //if (t->slc_muoncandidate_length.at(scl_ll_max) > 100 && dqdx_calib > 70000) continue;
-    //else if (t->slc_muoncandidate_length.at(scl_ll_max) <= 100 && dqdx_calib > 100000) continue;
-    
-    // mcc8.3 std::vector<double> svm_x = {92200, 91700, 91200, 90700, 90250, 89800, 89350, 88900, 88500, 88100, 87700, 87300, 86900, 86550, 86200, 85850, 85500, 85150, 84800, 84500, 84200, 83850, 83550, 83250, 82950, 82650, 82400, 82100, 81850, 81550, 81300, 81050, 80800, 80550, 80300, 80050, 79800, 79600, 79350, 79150, 78900, 78700, 78450, 78250, 78050, 77850, 77650, 77450, 77250, 77050, 76850, 76650, 76500, 76300, 76100, 75950, 75750, 75600, 75400, 75250, 75100, 74900, 74750, 74600, 74450, 74300, 74150, 74000, 73850, 73700, 73550, 73400, 73250, 73100, 73000, 72850, 72700, 72600, 72450, 72300, 72200, 72050, 71950, 71800, 71700, 71600, 71450, 71350, 71250, 71100, 71000, 70900, 70800, 70700, 70550, 70450, 70350, 70250, 70150, 70050, 69950, 69850, 69750, 69650, 69550, 69500, 69400, 69300, 69200, 69100, 69050, 68950, 68850, 68800, 68700, 68600, 68550, 68450, 68350, 68300, 68200, 68150, 68050, 68000, 67900, 67850, 67750, 67700, 67650, 67550, 67500, 67400, 67350, 67300, 67250, 67150, 67100, 67050, 67000, 66900, 66850, 66800, 66750, 66700, 66600, 66550, 66500, 66450, 66400, 66350, 66300, 66250, 66200, 66150, 66100, 66050, 66000, 65950, 65900, 65850, 65800, 65750, 65700, 65650, 65650, 65600, 65550, 65500, 65450, 65400, 65400, 65350, 65300, 65250, 65250, 65200, 65150, 65100, 65100, 65050, 65000, 65000, 64950, 64900, 64900, 64850, 64800, 64800, 64750, 64750, 64700, 64650, 64650, 64600, 64600, 64550, 64550, 64500, 64500, 64450, 64450, 64400, 64400, 64350, 64350, 64300, 64300, 64300, 64250, 64250, 64200, 64200, 64200, 64150, 64150, 64150, 64100, 64100, 64100, 64050, 64050, 64050, 64000, 64000, 64000, 63950, 63950, 63950, 63950, 63900, 63900, 63900, 63900, 63900, 63850, 63850, 63850, 63850, 63850, 63800, 63800, 63800, 63800, 63800, 63800, 63800, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63700, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63750, 63800, 63800, 63800, 63800, 63800, 63800, 63800, 63850, 63850, 63850, 63850, 63850, 63850, 63900, 63900, 63900, 63900, 63900, 63950, 63950, 63950, 63950, 63950, 64000, 64000, 64000, 64000, 64050, 64050, 64050, 64050, 64100, 64100, 64100, 64150, 64150, 64150, 64150, 64200, 64200, 64200, 64250, 64250, 64250, 64300, 64300, 64300, 64350, 64350, 64350, 64400, 64400, 64400, 64450, 64450, 64450, 64500, 64500, 64550, 64550, 64550, 64600, 64600, 64600, 64650, 64650, 64700, 64700, 64750, 64750, 64750, 64800, 64800, 64850, 64850, 64900, 64900, 64900, 64950, 64950, 65000, 65000, 65050, 65050, 65100, 65100, 65150, 65150, 65200, 65200, 65250, 65250, 65300, 65300, 65350, 65350, 65400, 65400, 65450, 65450, 65500, 65500, 65550, 65550, 65600, 65650, 65650, 65700, 65700, 65750, 65750, 65800, 65800, 65850, 65900, 65900, 65950, 65950, 66000, 66000, 66050, 66100, 66100, 66150, 66150, 66200, 66250, 66250, 66300, 66350, 66350, 66400, 66400, 66450, 66500, 66500, 66550, 66600, 66600, 66650, 66700, 66700, 66750, 66800, 66800, 66850, 66850, 66900, 66950, 67000, 67000, 67050, 67100, 67100, 67150, 67200, 67200, 67250, 67300, 67300, 67350, 67400, 67400, 67450, 67500, 67550, 67550, 67600, 67650, 67700, 67700, 67750, 67800, 67800, 67850, 67900, 67950, 67950, 68000, 68050, 68100, 68100, 68150, 68200, 68250, 68250, 68300, 68350, 68400, 68400, 68450, 68500, 68550, 68600, 68600, 68650, 68700, 68750, 68800, 68800, 68850, 68900, 68950, 69000, 69000, 69050, 69100, 69150, 69200, 69200, 69250, 69300, 69350, 69400, 69400, 69450, 69500, 69550, 69600, 69650, 69650, 69700, 69750, 69800, 69850, 69900, 69950, 69950, 70000, 70050, 70100, 70150, 70200, 70250, 70250, 70300, 70350, 70400, 70450, 70500, 70550, 70550, 70600, 70650, 70700, 70750, 70800, 70850, 70900, 70950, 70950, 71000, 71050, 71100, 71150, 71200, 71250, 71300, 71350, 71400, 71450, 71450, 71500, 71550, 71600, 71650, 71700, 71750, 71800, 71850, 71900, 71950, 72000, 72050, 72050, 72100, 72150, 72200, 72250, 72300, 72350, 72400, 72450, 72500, 72550, 72600, 72650, 72700, 72750, 72800, 72850, 72900, 72950, 73000, 73050, 73100, 73150, 73150, 73200, 73250, 73300, 73350, 73400, 73450, 73500, 73550, 73600, 73650, 73700, 73750, 73800, 73850, 73900, 73950, 74000, 74050, 74100, 74150, 74200, 74250, 74300, 74350, 74400, 74450, 74500, 74550, 74600, 74650, 74700, 74750, 74850, 74900, 74950, 75000, 75050, 75100, 75150, 75200, 75250, 75300, 75350, 75400, 75450, 75500, 75550, 75600, 75650, 75700, 75750, 75800, 75850, 75900, 75950, 76000, 76050, 76150, 76200, 76250, 76300, 76350, 76400, 76450, 76500, 76550, 76600, 76650, 76700, 76750, 76800, 76850, 76950, 77000, 77050, 77100, 77150, 77200, 77250, 77300, 77350, 77400, 77450, 77500, 77600, 77650, 77700, 77750, 77800, 77850, 77900, 77950, 78000, 78050, 78150, 78200, 78250, 78300, 78350, 78400, 78450, 78500, 78550, 78650, 78700, 78750, 78800, 78850, 78900, 78950, 79000, 79100, 79150, 79200, 79250, 79300, 79350, 79400, 79450, 79550, 79600, 79650, 79700, 79750, 79800, 79850, 79950, 80000, 80050, 80100, 80150, 80200, 80250, 80350, 80400, 80450, 80500, 80550, 80600, 80650, 80750, 80800, 80850, 80900, 80950, 81000, 81100, 81150, 81200, 81250, 81300, 81350, 81450, 81500, 81550, 81600, 81650, 81700, 81800, 81850, 81900, 81950, 82000, 82050, 82150, 82200, 82250, 82300, 82350, 82450, 82500, 82550, 82600, 82650, 82700, 82800, 82850, 82900, 82950, 83000, 83100, 83150, 83200, 83250, 83300, 83400, 83450, 83500, 83550, 83600, 83700, 83750, 83800, 83850, 83900, 84000, 84050, 84100, 84150, 84250, 84300, 84350, 84400, 84450, 84550, 84600, 84650, 84700, 84800, 84850, 84900, 84950, 85000, 85100, 85150, 85200, 85250, 85350, 85400, 85450, 85500, 85550, 85650, 85700, 85750, 85800, 85900, 85950, 86000, 86050, 86150, 86200, 86250, 86300, 86400, 86450, 86500, 86550, 86650, 86700, 86750, 86800, 86900, 86950, 87000, 87050, 87150, 87200, 87250, 87300, 87400, 87450, 87500, 87550, 87650, 87700, 87750, 87800, 87900, 87950, 88000, 88050, 88150, 88200, 88250, 88300, 88400, 88450, 88500, 88600, 88650, 88700, 88750, 88850, 88900, 88950, 89000, 89100, 89150, 89200, 89300, 89350, 89400, 89450, 89550, 89600, 89650, 89750, 89800, 89850, 89900, 90000, 90050, 90100, 90200, 90250, 90300, 90350, 90450, 90500, 90550, 90650, 90700, 90750, 90850, 90900, 90950, 91000, 91100, 91150, 91200, 91300, 91350, 91400, 91500, 91550, 91600, 91650, 91750, 91800, 91850, 91950, 92000, 92050, 92150, 92200, 92250, 92350, 92400, 92450, 92550, 92600, 92650, 92700, 92800, 92850, 92900, 93000, 93050, 93100, 93200, 93250, 93300, 93400, 93450, 93500, 93600, 93650, 93700, 93800, 93850, 93900, 94000, 94050, 94100, 94200, 94250, 94300, 94400, 94450, 94500, 94600, 94650, 94700, 94800, 94850, 94900, 95000, 95050, 95100, 95200, 95250, 95300, 95400, 95450, 95500, 95600, 95650, 95700, 95800, 95850, 95900, 96000, 96050, 96100, 96200, 96250, 96350, 96400, 96450, 96550, 96600, 96650, 96750, 96800, 96850, 96950, 97000, 97050, 97150, 97200, 97250, 97350, 97400, 97500, 97550, 97600, 97700, 97750, 97800, 97900, 97950, 98000, 98100, 98150, 98250};
+
+    // DqDx cut
     std::vector<double> svm_x = {86300, 86050, 85850, 85600, 85400, 85150, 84950, 84700, 84500, 84300, 84100, 83850, 83650, 83450, 83250, 83050, 82850, 82650, 82450, 82250, 82050, 81900, 81700, 81500, 81300, 81150, 80950, 80750, 80600, 80400, 80250, 80050, 79900, 79750, 79550, 79400, 79250, 79050, 78900, 78750, 78600, 78400, 78250, 78100, 77950, 77800, 77650, 77500, 77350, 77200, 77050, 76900, 76750, 76650, 76500, 76350, 76200, 76050, 75950, 75800, 75650, 75550, 75400, 75300, 75150, 75000, 74900, 74750, 74650, 74500, 74400, 74250, 74150, 74050, 73900, 73800, 73700, 73550, 73450, 73350, 73250, 73100, 73000, 72900, 72800, 72700, 72550, 72450, 72350, 72250, 72150, 72050, 71950, 71850, 71750, 71650, 71550, 71450, 71350, 71250, 71150, 71100, 71000, 70900, 70800, 70700, 70600, 70550, 70450, 70350, 70250, 70200, 70100, 70000, 69950, 69850, 69750, 69700, 69600, 69550, 69450, 69350, 69300, 69200, 69150, 69050, 69000, 68900, 68850, 68750, 68700, 68600, 68550, 68500, 68400, 68350, 68250, 68200, 68150, 68050, 68000, 67950, 67850, 67800, 67750, 67700, 67600, 67550, 67500, 67450, 67350, 67300, 67250, 67200, 67150, 67100, 67000, 66950, 66900, 66850, 66800, 66750, 66700, 66650, 66600, 66550, 66500, 66450, 66400, 66350, 66300, 66250, 66200, 66150, 66100, 66050, 66000, 65950, 65900, 65850, 65800, 65750, 65750, 65700, 65650, 65600, 65550, 65500, 65450, 65450, 65400, 65350, 65300, 65250, 65250, 65200, 65150, 65100, 65100, 65050, 65000, 65000, 64950, 64900, 64850, 64850, 64800, 64750, 64750, 64700, 64700, 64650, 64600, 64600, 64550, 64500, 64500, 64450, 64450, 64400, 64400, 64350, 64350, 64300, 64250, 64250, 64200, 64200, 64150, 64150, 64100, 64100, 64100, 64050, 64050, 64000, 64000, 63950, 63950, 63900, 63900, 63900, 63850, 63850, 63800, 63800, 63800, 63750, 63750, 63750, 63700, 63700, 63700, 63650, 63650, 63650, 63600, 63600, 63600, 63550, 63550, 63550, 63500, 63500, 63500, 63500, 63450, 63450, 63450, 63450, 63400, 63400, 63400, 63400, 63400, 63350, 63350, 63350, 63350, 63350, 63350, 63300, 63300, 63300, 63300, 63300, 63300, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63200, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63250, 63300, 63300, 63300, 63300, 63300, 63300, 63300, 63350, 63350, 63350, 63350, 63350, 63350, 63400, 63400, 63400, 63400, 63400, 63400, 63450, 63450, 63450, 63450, 63500, 63500, 63500, 63500, 63500, 63550, 63550, 63550, 63550, 63600, 63600, 63600, 63600, 63650, 63650, 63650, 63650, 63700, 63700, 63700, 63750, 63750, 63750, 63800, 63800, 63800, 63800, 63850, 63850, 63850, 63900, 63900, 63900, 63950, 63950, 63950, 64000, 64000, 64000, 64050, 64050, 64100, 64100, 64100, 64150, 64150, 64150, 64200, 64200, 64250, 64250, 64250, 64300, 64300, 64350, 64350, 64350, 64400, 64400, 64450, 64450, 64450, 64500, 64500, 64550, 64550, 64600, 64600, 64650, 64650, 64650, 64700, 64700, 64750, 64750, 64800, 64800, 64850, 64850, 64900, 64900, 64950, 64950, 65000, 65000, 65050, 65050, 65100, 65100, 65150, 65150, 65200, 65200, 65250, 65250, 65300, 65300, 65350, 65350, 65400, 65400, 65450, 65500, 65500, 65550, 65550, 65600, 65600, 65650, 65650, 65700, 65750, 65750, 65800, 65800, 65850, 65850, 65900, 65950, 65950, 66000, 66000, 66050, 66100, 66100, 66150, 66150, 66200, 66250, 66250, 66300, 66350, 66350, 66400, 66400, 66450, 66500, 66500, 66550, 66600, 66600, 66650, 66700, 66700, 66750, 66750, 66800, 66850, 66850, 66900, 66950, 66950, 67000, 67050, 67050, 67100, 67150, 67150, 67200, 67250, 67300, 67300, 67350, 67400, 67400, 67450, 67500, 67500, 67550, 67600, 67650, 67650, 67700, 67750, 67750, 67800, 67850, 67900, 67900, 67950, 68000, 68050, 68050, 68100, 68150, 68150, 68200, 68250, 68300, 68300, 68350, 68400, 68450, 68450, 68500, 68550, 68600, 68650, 68650, 68700, 68750, 68800, 68800, 68850, 68900, 68950, 69000, 69000, 69050, 69100, 69150, 69150, 69200, 69250, 69300, 69350, 69350, 69400, 69450, 69500, 69550, 69600, 69600, 69650, 69700, 69750, 69800, 69800, 69850, 69900, 69950, 70000, 70050, 70050, 70100, 70150, 70200, 70250, 70300, 70300, 70350, 70400, 70450, 70500, 70550, 70600, 70600, 70650, 70700, 70750, 70800, 70850, 70900, 70900, 70950, 71000, 71050, 71100, 71150, 71200, 71250, 71300, 71300, 71350, 71400, 71450, 71500, 71550, 71600, 71650, 71700, 71700, 71750, 71800, 71850, 71900, 71950, 72000, 72050, 72100, 72150, 72200, 72200, 72250, 72300, 72350, 72400, 72450, 72500, 72550, 72600, 72650, 72700, 72750, 72800, 72850, 72850, 72900, 72950, 73000, 73050, 73100, 73150, 73200, 73250, 73300, 73350, 73400, 73450, 73500, 73550, 73600, 73650, 73700, 73750, 73800, 73850, 73900, 73900, 73950, 74000, 74050, 74100, 74150, 74200, 74250, 74300, 74350, 74400, 74450, 74500, 74550, 74600, 74650, 74700, 74750, 74800, 74850, 74900, 74950, 75000, 75050, 75100, 75150, 75200, 75250, 75300, 75350, 75400, 75450, 75500, 75550, 75600, 75650, 75700, 75750, 75800, 75850, 75900, 76000, 76050, 76100, 76150, 76200, 76250, 76300, 76350, 76400, 76450, 76500, 76550, 76600, 76650, 76700, 76750, 76800, 76850, 76900, 76950, 77000, 77050, 77100, 77200, 77250, 77300, 77350, 77400, 77450, 77500, 77550, 77600, 77650, 77700, 77750, 77800, 77850, 77900, 78000, 78050, 78100, 78150, 78200, 78250, 78300, 78350, 78400, 78450, 78500, 78550, 78600, 78700, 78750, 78800, 78850, 78900, 78950, 79000, 79050, 79100, 79150, 79250, 79300, 79350, 79400, 79450, 79500, 79550, 79600, 79650, 79750, 79800, 79850, 79900, 79950, 80000, 80050, 80100, 80150, 80250, 80300, 80350, 80400, 80450, 80500, 80550, 80600, 80700, 80750, 80800, 80850, 80900, 80950, 81000, 81100, 81150, 81200, 81250, 81300, 81350, 81400, 81450, 81550, 81600, 81650, 81700, 81750, 81800, 81900, 81950, 82000, 82050, 82100, 82150, 82200, 82300, 82350, 82400, 82450, 82500, 82550, 82650, 82700, 82750, 82800, 82850, 82900, 83000, 83050, 83100, 83150, 83200, 83250, 83350, 83400, 83450, 83500, 83550, 83650, 83700, 83750, 83800, 83850, 83900, 84000, 84050, 84100, 84150, 84200, 84300, 84350, 84400, 84450, 84500, 84600, 84650, 84700, 84750, 84800, 84900, 84950, 85000, 85050, 85100, 85200, 85250, 85300, 85350, 85400, 85500, 85550, 85600, 85650, 85700, 85800, 85850, 85900, 85950, 86000, 86100, 86150, 86200, 86250, 86350, 86400, 86450, 86500, 86550, 86650, 86700, 86750, 86800, 86900, 86950, 87000, 87050, 87150, 87200, 87250, 87300, 87350, 87450, 87500, 87550, 87600, 87700, 87750, 87800, 87850, 87950, 88000, 88050, 88100, 88200, 88250, 88300, 88350, 88450, 88500, 88550, 88600, 88700, 88750, 88800, 88850, 88950, 89000, 89050, 89100, 89200, 89250, 89300, 89350, 89450, 89500, 89550, 89600, 89700, 89750, 89800, 89900, 89950, 90000, 90050, 90150, 90200, 90250, 90300, 90400, 90450, 90500, 90600, 90650, 90700, 90750, 90850, 90900, 90950, 91000, 91100, 91150, 91200, 91300, 91350, 91400, 91450, 91550, 91600, 91650, 91750, 91800, 91850, 91950, 92000, 92050, 92100, 92200, 92250};
 
     double l = std::round(t->slc_muoncandidate_length.at(scl_ll_max));
@@ -1360,17 +1426,14 @@ int main(int argc, char* argv[]) {
     if (l >= 0 && l < 1000) {
       dqdx_cut = svm_x.at(l);
     }
-    /*if (l >= 0 && l<=30) {
-      dqdx_cut = dqdx_cut+50000;
-    }*/
-    //if (t->lep_costheta < -0.5 && dqdx_calib > 100000 && t->ccnc == 0)
-      //std::cout << "low costheta, dqdx_calib: " << dqdx_calib << ", length: " << t->slc_muoncandidate_length.at(scl_ll_max)  << ", event: " << t->event << ", reco theta: " << t->slc_longesttrack_theta.at(scl_ll_max)  << std::endl;
-    
+      
     if (dqdx_calib > dqdx_cut) continue;
 
     if (isSignal && nu_origin) selected_signal_events_percut["mip_consistency"]++;
     selected_events_percut["mip_consistency"]++;
 
+
+    // FV cut
     if(t->slc_nuvtx_fv.at(scl_ll_max) == 0) continue;
     if(t->slc_nuvtx_z.at(scl_ll_max) > 675 && t->slc_nuvtx_z.at(scl_ll_max) < 775) continue;
     //if(t->slc_nuvtx_z.at(scl_ll_max) < 300) continue;
@@ -1378,76 +1441,28 @@ int main(int argc, char* argv[]) {
     if (isSignal && nu_origin) selected_signal_events_percut["fiducial_volume"]++;
     selected_events_percut["fiducial_volume"]++;
     
-    //if (t->slc_consistency_score.at(scl_ll_max) > 0.65 && t->slc_consistency_score.at(scl_ll_max) < 0.75) continue;
+    
 
-    //if(t->slc_geocosmictag.at(scl_ll_max)) continue;
-    
-    //if(t->slc_crosses_top_boundary.at(scl_ll_max) && t->slc_muoncandidate_mcs_delta_ll.at(scl_ll_max) < -5) continue;
-    
-    
-    //if(t->slc_ntrack.at(scl_ll_max) == 1 && t->slc_crosses_top_boundary.at(scl_ll_max) == 1) continue;
-    
+
+    // Cut on residuala ans fraction of used hits in cluster
+    if (t->slc_muoncandidate_residuals_std.at(scl_ll_max) > 2.5) continue;
+    if (std::abs(t->slc_muoncandidate_residuals_mean.at(scl_ll_max)) > 0.7) continue;
+    if (t->slc_muoncandidate_perc_used_hits_in_cluster.at(scl_ll_max) < 0.7) continue;
+
+
     //if(t->slc_longesttrack_length.at(scl_ll_max) < 25.) continue;
     
     //if(!t->slc_iscontained.at(scl_ll_max)) continue;
     
     //if(t->slc_crosses_top_boundary.at(scl_ll_max) == 1) continue;
 
-    
-    if (t->slc_muoncandidate_residuals_std.at(scl_ll_max) > 2.5) continue;
-    //if (t->slc_muoncandidate_residuals_std.at(scl_ll_max) < 0.1) continue;
-    if (std::abs(t->slc_muoncandidate_residuals_mean.at(scl_ll_max)) > 0.7) continue;
-    if (t->slc_muoncandidate_perc_used_hits_in_cluster.at(scl_ll_max) < 0.7) continue;
-    //if (t->slc_muoncandidate_maxscatteringangle.at(scl_ll_max) > 20) continue;
-    //if (dqdx_calib < 0) continue;
 
-    /*
-    
-    // Find longest shower in the event
-    //bool found = false;
-    double s_max_length = -1, s_max_length_index = -1;
-    for (size_t s = 0; s < t->nslices; s++) {
-      if (s == scl_ll_max) continue;
-      if (t->slc_longestshower_length.at(s) == -9999) continue;
-        
-      //if (t->slc_longestshower_theta.at(s) > 0.5 
-      //    && std::abs(t->slc_longestshower_startz.at(s) - t->beamfls_z.at(flashInBeamSpill)) < 100)
-      //  found = true;
 
-      if (t->slc_longestshower_theta.at(s) > s_max_length) {
-        s_max_length = t->slc_longestshower_theta.at(s);
-        s_max_length_index = s;
-      }      
-    }
-
-    //if (found) continue;
-
-    // Check all shower cuts
-    bool shower_exists = false;
-    bool shower_theta_cut = false;
-    bool shower_phi_cut = false;
-    bool shower_flash_cut = false;
-    if (s_max_length_index > -1) {
-      shower_exists = true;
-      shower_theta_cut = t->slc_longestshower_theta.at(s_max_length_index) > 0;
-      shower_phi_cut = t->slc_longestshower_phi.at(s_max_length_index) > 2
-                       || t->slc_longestshower_phi.at(s_max_length_index) < -2
-                       || (t->slc_longestshower_phi.at(s_max_length_index) > -1.1415 && t->slc_longestshower_phi.at(s_max_length_index) < 1.1415);
-      shower_flash_cut = std::abs(t->slc_longestshower_startz.at(s_max_length_index) - t->beamfls_z.at(flashInBeamSpill)) < 200;
-    }
-
-    // If all shower cuts are satisfied, there is probably a nue in this event, reject it
-    //if (shower_exists && shower_flash_cut && shower_theta_cut && shower_phi_cut) continue;
-    //if (shower_exists && shower_theta_cut && shower_flash_cut) continue;
-    */
     
     
     //
     // EVENT IS SELECTED
     //
-
-
-    //if (!t->is_selected) std::cout << "event is selected, but not in filter, event " << t->event << std::endl;
     
     //std::cout << ">>>>>>>>>>>>>>>>> Event is selected, " << t->run << ", " << t->subrun << ", " << t->event << ", slice " << scl_ll_max << std::endl;
     
@@ -1476,6 +1491,7 @@ int main(int argc, char* argv[]) {
       _mom_tree->Fill();
 
       h_true_reco_mom->Fill(_mom_tree_true, _mom_tree_mcs);
+      if(!isdata) FillBootstrap(_mom_tree_true, _mom_tree_mcs, bs_true_reco_mom, fname, wgts);
       h_true_reco_costheta->Fill(_mom_tree_angle_true, _mom_tree_angle_reco);
     }
     
@@ -1519,10 +1535,7 @@ int main(int argc, char* argv[]) {
     hmap_xdiff["total"]->Fill(t->slc_flsmatch_qllx.at(scl_ll_max) - t->slc_flsmatch_tpcx.at(scl_ll_max));
     hmap_zdiff["total"]->Fill(t->slc_flsmatch_hypoz.at(scl_ll_max) - t->beamfls_z.at(flashInBeamSpill));
     hmap_pediff["total"]->Fill(hypo_pe - t->beamfls_pe.at(flashInBeamSpill));
-    
-    if (t->event == 150801)
-      std::cout << "hypo_pe: " << hypo_pe << ", reco_pe: " << t->beamfls_pe.at(flashInBeamSpill) << std::endl;
-    
+        
     hmap_vtxx["total"]->Fill(t->slc_nuvtx_x.at(scl_ll_max));
     hmap_vtxy["total"]->Fill(t->slc_nuvtx_y.at(scl_ll_max));
     hmap_vtxz["total"]->Fill(t->slc_nuvtx_z.at(scl_ll_max));
@@ -1555,9 +1568,9 @@ int main(int argc, char* argv[]) {
     }
     
     if (isNueCCFV) {
-      nue_cc_selected_total+=1;//t->bnb_weight;
+      nue_cc_selected_total+=t->bnb_weight;
       if (t->nu_e >= 0.05 && t->nu_e <= 1.5){
-        nue_cc_selected_total_energy_range+=1;//t->bnb_weight;
+        nue_cc_selected_total_energy_range+=t->bnb_weight;
         //std::cout << "Selected nue event, run " << t->run << ", " << t->subrun << ", " << t->event << ", index " << scl_ll_max << std::endl;
       }
     }
@@ -1566,61 +1579,21 @@ int main(int argc, char* argv[]) {
         && t->tvtx_x[0] > 0. && t->tvtx_x[0] < 256.35
         && t->tvtx_y[0] > -116.5 && t->tvtx_y[0] < 116.5
         && t->tvtx_z[0] > 0. && t->tvtx_y[0] < 1036.8){
-        nue_selected_total_energy_range+=1;//t->bnb_weight;
+        nue_selected_total_energy_range+=t->bnb_weight;
         //std::cout << "event " << t->event << ", weight: " << t->bnb_weight << ", truepdg: " << true_pdg 
         //          << ", dqds: " << dqdx_calib 
                   //<< ", dqds(1): " << t->slc_muoncandidate_dqdx_v_trunc.at(scl_ll_max) * _gainCalib 
                   //<< ", dqds(0): " << t->slc_muoncandidate_dqdx_u_trunc.at(scl_ll_max) * _gainCalib 
         //          << ", length: " << t->slc_longesttrack_length.at(scl_ll_max) << std::endl;
-        h_nue_selected_energy->Fill(t->nu_e, 1/*t->bnb_weight*/); 
-        if (std::abs(true_pdg) == 11) n_nue_electron+=1;//t->bnb_weight;
-        if (std::abs(true_pdg) == 2212) n_nue_proton+=1;//t->bnb_weight;
-        if (std::abs(true_pdg) == 211) n_nue_pion+=1;//t->bnb_weight;
+        h_nue_selected_energy->Fill(t->nu_e, t->bnb_weight); 
+        if (std::abs(true_pdg) == 11) n_nue_electron+=t->bnb_weight;
+        if (std::abs(true_pdg) == 2212) n_nue_proton+=t->bnb_weight;
+        if (std::abs(true_pdg) == 211) n_nue_pion+=t->bnb_weight;
         //std::cout << "Selected nue event, run " << t->run << ", " << t->subrun << ", " << t->event << ", index " << scl_ll_max << std::endl;
       }
     }
 
-    // Look at showers
-    /*
-    _s_nupdg = t->nupdg;
-    _s_track_pdg = true_pdg;
-    _s_tpcobj_origin = t->slc_origin.at(scl_ll_max);
-    _s_flash_z = t->beamfls_z.at(flashInBeamSpill);
-
-    double max_length = 1e9, max_length_index = -1;
-    for (size_t s = 0; s < t->nslices; s++) {
-      if (s == scl_ll_max) continue;
-      if (t->slc_longestshower_length.at(s) == -9999) continue;
-      if (std::abs(_s_flash_z - t->slc_longestshower_startz.at(s)) < max_length) {
-        max_length = std::abs(_s_flash_z - t->slc_longestshower_startz.at(s));
-        max_length_index = s;
-      }
-    }
-
-    if (max_length_index > -1) {
-      _s_shower_length = t->slc_longestshower_length.at(max_length_index);
-      _s_shower_phi = t->slc_longestshower_phi.at(max_length_index);
-      _s_shower_theta = t->slc_longestshower_theta.at(max_length_index);
-      _s_shower_openangle = t->slc_longestshower_openangle.at(max_length_index);
-      _s_shower_startx = t->slc_longestshower_startx.at(max_length_index);
-      _s_shower_starty = t->slc_longestshower_starty.at(max_length_index);
-      _s_shower_startz = t->slc_longestshower_startz.at(max_length_index);
-    } else {
-      _s_shower_length = -1;
-      _s_shower_phi = -1;
-      _s_shower_theta = -1;
-      _s_shower_openangle = -1;
-      _s_shower_startx = -1;
-      _s_shower_starty = -1;
-      _s_shower_startz = -1;
-    }
-
-    _shower_tree->Fill();
-    */
-    
-    
-    //if (nu_origin && isSignal && true_pdg!=13 && t->lep_costheta < -0.5)
-      //std::cout << ">>>>> here we select rigth backward candidate, but not the muon, event " << t->event << std::endl;
+   
     
     //
     // SIGNAL
@@ -1632,6 +1605,7 @@ int main(int argc, char* argv[]) {
       signal_sel ++;
       h_eff_num->Fill(t->nu_e);
       h_eff_mumom_num->Fill(t->true_muon_mom);
+      if (!isdata) FillBootstrap(t->true_muon_mom, bs_eff_mumom_num, fname, wgts);
       //h_eff_mumom_num_bs->Fill(t->true_muon_mom, 1., wgts);
       h_eff_muangle_num->Fill(t->lep_costheta);
       h_eff_muangle_mumom_num->Fill(t->lep_costheta, t->true_muon_mom);
@@ -1727,7 +1701,7 @@ int main(int argc, char* argv[]) {
       hmap_multtracktol["nue"]->Fill(t->slc_mult_track_tolerance.at(scl_ll_max));
       hmap_trktheta_trkmom["nue"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max), t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
       if (t->nupdg == 12)
-        nue_cc_selected+=1;//t->bnb_weight;
+        nue_cc_selected+=t->bnb_weight;
     }
     //
     // NC
@@ -1864,6 +1838,7 @@ int main(int argc, char* argv[]) {
   } // end of event loop
   
   
+  // Save POT and number of events 
   h_pot->SetBinContent(1, totalPOT);
   h_nevts->SetBinContent(1, total_events);
 
@@ -2646,6 +2621,14 @@ int main(int argc, char* argv[]) {
   file_out->WriteObject(&hmap_multpfp, "hmap_multpfp");
   file_out->WriteObject(&hmap_multtracktol, "hmap_multtracktol");
   file_out->WriteObject(&hmap_trktheta_trkmom, "hmap_trktheta_trkmom");
+
+  file_out->WriteObject(&bs_eff_mumom_num, "bs_eff_mumom_num");
+  file_out->WriteObject(&bs_eff_mumom_den, "bs_eff_mumom_den");
+
+  file_out->WriteObject(&bs_true_reco_mom, "bs_true_reco_mom");
+  for (auto i : bs_true_reco_mom) {
+    std::cout << i.first  << " => " << i.second->GetBinContent(1, 1) << std::endl;
+  }
 
   file_out->WriteObject(&hmap_vtxcheck_angle, "hmap_vtxcheck_angle");
   file_out->WriteObject(&hmap_residuals_std, "hmap_residuals_std");

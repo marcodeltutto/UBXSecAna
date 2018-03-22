@@ -236,8 +236,8 @@ namespace ubana {
       for (int n = 0; n < _h_eff_mumom_den->GetNbinsY(); n++) {
         matrix_angle_mom_den_truth[m][n] = _h_eff_mumom_den->GetBinContent(m+1, n+1);
         matrix_angle_mom_num_truth[m][n] = _h_eff_mumom_num->GetBinContent(m+1, n+1);
-        std::cout << "den (" << m << ", " << n << ") = " << matrix_angle_mom_den_truth[m][n] << std::endl;
-        std::cout << "num (" << m << ", " << n << ") = " << matrix_angle_mom_num_truth[m][n] << std::endl;
+        //std::cout << "den (" << m << ", " << n << ") = " << matrix_angle_mom_den_truth[m][n] << std::endl;
+        //std::cout << "num (" << m << ", " << n << ") = " << matrix_angle_mom_num_truth[m][n] << std::endl;
       }
     }
 
@@ -447,7 +447,7 @@ namespace ubana {
         unc /= 2.;
         h_eff->SetBinError(i, j, unc);
 
-        std::cout << "Efficiency at bin " << i << ", " << j << ": " << h_eff->GetBinContent(i, j) << " =- " << unc << std::endl;
+        //std::cout << "Efficiency at bin " << i << ", " << j << ": " << h_eff->GetBinContent(i, j) << " =- " << unc << std::endl;
       }
     }
 
@@ -544,7 +544,7 @@ namespace ubana {
         double content = h_mc->GetBinContent(i, j);
         double unc = h_mc->GetBinError(i, j);
 
-        std::cout << "bin (" << i << ", " << j << "): content is " << content  << ", unc is " << unc << std::endl;
+        //std::cout << "bin (" << i << ", " << j << "): content is " << content  << ", unc is " << unc << std::endl;
 
         if (content != 0) {
           h_mc_empty_bottom->SetBinContent(i, j, content - unc);

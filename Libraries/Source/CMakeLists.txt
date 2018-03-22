@@ -29,4 +29,6 @@ add_library(Libraries   MigrationMatrix2D.cxx
                         CrossSectionCalculator1D.cxx
                         CrossSectionCalculator2D.cxx
                         BootstrapTH1D.cxx
+                        ReweightingPlotter.cxx
+                        CorrelationCalculator2D.cxx
                         UBXSecEvent.C)

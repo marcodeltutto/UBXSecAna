@@ -74,8 +74,6 @@ namespace ubana {
 
     Long64_t nentries = _tree->GetEntriesFast();
 
-    std::cout << "MMMMMMMMMMMMMMMMMMMMMM Number of entries: " << nentries << std::endl;
-
     // Resize the smearing matrix
     _S.resize( _var1_bins.size(), 
               std::vector<std::vector<std::vector<double>>> (_var2_bins.size(),
@@ -92,7 +90,7 @@ namespace ubana {
       for (int j = 0; j < _var2_bins.size(); j++) {
         for (int m = 0; m < _var1_bins.size(); m++) {
           for (int n = 0; n < _var2_bins.size(); n++) { 
-            std::cout << "(" << i << ", " << j << ", " << m << ", " << n << ") => " << _S[i][j][m][n] << std::endl;
+            if(_verbose) std::cout << "(" << i << ", " << j << ", " << m << ", " << n << ") => " << _S[i][j][m][n] << std::endl;
             counter++;
           }
         }
@@ -110,8 +108,8 @@ namespace ubana {
         auto v1_bin = _var1_bins.at(m);
         auto v2_bin = _var2_bins.at(n);
 
-        std::cout << "b1: " << v1_bin.first << " - " << v1_bin.second << std::endl;
-        std::cout << "b2: " << v2_bin.first << " - " << v2_bin.second << std::endl;
+        if(_verbose) std::cout << "b1: " << v1_bin.first << " - " << v1_bin.second << std::endl;
+        if(_verbose) std::cout << "b2: " << v2_bin.first << " - " << v2_bin.second << std::endl;
 
         _reco_per_true->Reset();
 
@@ -135,7 +133,7 @@ namespace ubana {
         _reco_per_true->Draw("colz text");
         for (int i = 0; i < _var1_bins.size(); i++) {
           for (int j = 0; j < _var2_bins.size(); j++) {
-            std::cout << "(" << i << ", " << j << ")" << _reco_per_true->GetBinContent(i+1, j+1) << std::endl;
+            if(_verbose) std::cout << "(" << i << ", " << j << ")" << _reco_per_true->GetBinContent(i+1, j+1) << std::endl;
 
             double value = _reco_per_true->GetBinContent(i+1, j+1);
             if (std::isnan(value))
@@ -165,11 +163,13 @@ namespace ubana {
     }
 
 
-    for (int i = 0; i < _var1_bins.size(); i++) {
-      for (int j = 0; j < _var2_bins.size(); j++) {
-        for (int m = 0; m < _var1_bins.size(); m++) {
-          for (int n = 0; n < _var2_bins.size(); n++) { 
-            std::cout << "(" << i << ", " << j << ", " << m << ", " << n << ") => " << _S[i][j][m][n] << std::endl;
+    if(_verbose) {
+      for (int i = 0; i < _var1_bins.size(); i++) {
+        for (int j = 0; j < _var2_bins.size(); j++) {
+          for (int m = 0; m < _var1_bins.size(); m++) {
+            for (int n = 0; n < _var2_bins.size(); n++) { 
+              std::cout << "(" << i << ", " << j << ", " << m << ", " << n << ") => " << _S[i][j][m][n] << std::endl;
+            }
           }
         }
       }
@@ -194,7 +194,7 @@ namespace ubana {
             int reco_bin = i + j * _var1_bins.size() + 1;
             int true_bin = m + n * _var1_bins.size() + 1;
             h_sm->SetBinContent(reco_bin, true_bin, _S[i][j][m][n]);
-            std::cout << "(i, j, m, n) = (" << i << ", " << j << ", " << m << ", " << n << "   reco_bin: " << reco_bin << ", true_bin: " << true_bin << ", S: " << _S[i][j][m][n] << std::endl;
+            if(_verbose) std::cout << "(i, j, m, n) = (" << i << ", " << j << ", " << m << ", " << n << "   reco_bin: " << reco_bin << ", true_bin: " << true_bin << ", S: " << _S[i][j][m][n] << std::endl;
 
           }
         }

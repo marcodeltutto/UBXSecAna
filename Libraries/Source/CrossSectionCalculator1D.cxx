@@ -399,7 +399,7 @@ namespace ubana {
   }
 
 
-  void CrossSectionCalculator1D::ExtractCrossSection(std::string xaxis_label, std::string yaxis_label) 
+  TH1D* CrossSectionCalculator1D::ExtractCrossSection(std::string xaxis_label, std::string yaxis_label) 
   {
 
     //
@@ -440,7 +440,7 @@ namespace ubana {
       //if (b == 1) h_eff->SetBinContent(b,0.5);
       //if (b == 2) h_eff->SetBinContent(b,0.55);
 
-      std::cout << "Efficiency at bin " << b << ": " << h_eff->GetBinContent(b) << " =- " << unc << std::endl;
+      //std::cout << "Efficiency at bin " << b << ": " << h_eff->GetBinContent(b) << " =- " << unc << std::endl;
     }
 
     //
@@ -511,6 +511,8 @@ namespace ubana {
     TString name = _folder +_name + "_xsec";
     c->SaveAs(name + ".pdf");
     c->SaveAs(name + ".C","C");
+
+    return h_data;
 
   }
 

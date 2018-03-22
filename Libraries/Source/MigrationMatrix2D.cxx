@@ -47,7 +47,7 @@ namespace ubana {
 
     for (int j = 1; j < _m + 1; j++) {    // True bin
 
-      std::cout << "\tThis is true bin " << j << std::endl;
+      if(_verbose) std::cout << "\tThis is true bin " << j << std::endl;
 
       std::vector<double> p_v;
       p_v.resize(_n + 1);
@@ -56,37 +56,37 @@ namespace ubana {
 
       for (int i = 1; i < _n + 1; i++) {      // Reco bin
 
-        std::cout << "This is reco bin " << i << std::endl;
+        if(_verbose) std::cout << "This is reco bin " << i << std::endl;
 
         p_v.at(i) = _h_true_reco_mom->GetBinContent(j, i);
         sum += p_v.at(i);
 
-        std::cout << "\tValue is " << p_v.at(i) << std::endl;
+        if(_verbose) std::cout << "\tValue is " << p_v.at(i) << std::endl;
 
 
       } // reco bin
 
-      std::cout << "\t>>> Sum is " << sum << std::endl;
+      if(_verbose) std::cout << "\t>>> Sum is " << sum << std::endl;
 
       double tot_prob = 0;
 
       for (int i = 1; i < _n + 1; i++) {
         p_v.at(i) /= sum;
 
-        std::cout << "\t\tProbability at " << i << " is " << p_v.at(i) << std::endl;
+        if(_verbose) std::cout << "\t\tProbability at " << i << " is " << p_v.at(i) << std::endl;
         tot_prob += p_v.at(i);
 
         //int row_offset = (i-1)*n;
         //data_v.at(row_offset + j-1) = p_v.at(j);
         _S[i - 1][j - 1] = p_v.at(i);
       }
-      std::cout << "\t\t> Total Probability is " << tot_prob << std::endl;
+      if(_verbose) std::cout << "\t\t> Total Probability is " << tot_prob << std::endl;
 
     } // true bin
     
 
-    std::cout << _name << "Migration Matrix: " << std::endl;
-    _S.Print();
+    if(_verbose) std::cout << _name << "Migration Matrix: " << std::endl;
+    if(_verbose) _S.Print();
 
     return _S;
 

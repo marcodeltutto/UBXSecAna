@@ -117,7 +117,7 @@ namespace ubana{
     TH1D* ProcessDataHisto(TH1D* histo);
 
     ///
-    void ExtractCrossSection(std::string, std::string);
+    TH1D* ExtractCrossSection(std::string, std::string);
 
     ///
     void Smear(int n, int m);
