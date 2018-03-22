@@ -123,8 +123,8 @@ int main(int argc, char* argv[]) {
   gROOT->ProcessLine("gErrorIgnoreLevel = 2001;"); // 1001: INFO, 2001: WARNINGS, 3001: ERRORS
 
   std::string library = ".x " + env + "rootlogon.C";
-  gROOT->ProcessLine(library.c_str());
-  //gROOT->ProcessLine(".x ~/rootlogon.C");
+  //gROOT->ProcessLine(library.c_str());
+  gROOT->ProcessLine(".x ~/rootlogon.C");
 
   library = ".L " + env + "loader_C.so";
   gROOT->ProcessLine(library.c_str());

@@ -506,9 +506,9 @@ int main(int argc, char* argv[]) {
   //BootstrapTH1D* h_eff_mumom_num_bs = new BootstrapTH1D("h_eff_mumom_num_bs", "h_eff_mumom_num_bs", 6, bins_mumom);
   //BootstrapTH1D* h_eff_mumom_den_bs = new BootstrapTH1D("h_eff_mumom_den_bs", "h_eff_mumom_den_bs", 6, bins_mumom);
   std::map<std::string, TH1D*> bs_eff_mumom_num;
-  bs_eff_mumom_num["nominal"] = new TH1D("h_eff_mumom_num", "h_eff_mumom_num", 6, bins_mumom);
+  bs_eff_mumom_num["nominal"] = new TH1D("h_eff_mumom_num_nom", "h_eff_mumom_num", 6, bins_mumom);
   std::map<std::string, TH1D*> bs_eff_mumom_den;
-  bs_eff_mumom_den["nominal"] = new TH1D("h_eff_mumom_den", "h_eff_mumom_den", 6, bins_mumom);
+  bs_eff_mumom_den["nominal"] = new TH1D("h_eff_mumom_den_nom", "h_eff_mumom_den", 6, bins_mumom);
 
   TH1D* h_eff_mult_num = new TH1D("h_eff_mult_num", "h_eff_mult_num", 20, 0, 20);
   TH1D* h_eff_mult_den = new TH1D("h_eff_mult_den", "h_eff_mult_den", 20, 0, 20);
