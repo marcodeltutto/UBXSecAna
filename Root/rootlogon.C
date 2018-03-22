@@ -7,79 +7,78 @@ void rootlogon()
   printf("Welcome to the ROOT of all evils \n");
 
   // Defaults to classic style, but that's OK, we can fix it
-  TStyle* novaStyle = new TStyle("novaStyle", "NOvA Style");
-  
+  TStyle* ubStyle = new TStyle("ubStyle", "MicroBooNE Style");
+
   // Centre title
-  novaStyle->SetTitleAlign(22);
-  novaStyle->SetTitleX(.5);
-  novaStyle->SetTitleY(.95);
-  novaStyle->SetTitleBorderSize(0);
+  ubStyle->SetTitleAlign(22);
+  ubStyle->SetTitleX(.5);
+  ubStyle->SetTitleY(.95);
+  ubStyle->SetTitleBorderSize(0);
 
   // No info box
-  novaStyle->SetOptStat(0);
-  //novaStyle->SetOptStat("emri");
+  ubStyle->SetOptStat(0);
+  //ubStyle->SetOptStat("emri");
 
   //set the background color to white
-  novaStyle->SetFillColor(10);
-  novaStyle->SetFrameFillColor(10);
-  novaStyle->SetCanvasColor(10);
-  novaStyle->SetPadColor(10);
-  novaStyle->SetTitleFillColor(0);
-  novaStyle->SetStatColor(10);
+  ubStyle->SetFillColor(10);
+  ubStyle->SetFrameFillColor(10);
+  ubStyle->SetCanvasColor(10);
+  ubStyle->SetPadColor(10);
+  ubStyle->SetTitleFillColor(0);
+  ubStyle->SetStatColor(10);
 
   // Don't put a colored frame around the plots
-  novaStyle->SetFrameBorderMode(0);
-  novaStyle->SetCanvasBorderMode(0);
-  novaStyle->SetPadBorderMode(0);
+  ubStyle->SetFrameBorderMode(0);
+  ubStyle->SetCanvasBorderMode(0);
+  ubStyle->SetPadBorderMode(0);
 
   // Set the default line color for a fit function to be red
-  novaStyle->SetFuncColor(kRed);
+  ubStyle->SetFuncColor(kRed);
 
   // Marker settings
-  //  novaStyle->SetMarkerStyle(kFullCircle);
+  //  ubStyle->SetMarkerStyle(kFullCircle);
 
   // No border on legends
-  novaStyle->SetLegendBorderSize(0);
+  ubStyle->SetLegendBorderSize(0);
 
-  // Disabled for violating NOvA style guidelines
   // Scientific notation on axes
   //  TGaxis::SetMaxDigits(3);
 
   // Axis titles
-  novaStyle->SetTitleSize(.055, "xyz");
-  novaStyle->SetTitleOffset(.8, "xyz");
+  ubStyle->SetTitleSize(.055, "xyz");
+  ubStyle->SetTitleOffset(.8, "xyz");
   // More space for y-axis to avoid clashing with big numbers
-  novaStyle->SetTitleOffset(.9, "y");
+  ubStyle->SetTitleOffset(.9, "y");
   // This applies the same settings to the overall plot title
-  novaStyle->SetTitleSize(.055, "");
-  novaStyle->SetTitleOffset(.8, "");
+  ubStyle->SetTitleSize(.055, "");
+  ubStyle->SetTitleOffset(.8, "");
   // Axis labels (numbering)
-  novaStyle->SetLabelSize(.04, "xyz");
-  novaStyle->SetLabelOffset(.005, "xyz");
+  ubStyle->SetLabelSize(.04, "xyz");
+  ubStyle->SetLabelOffset(.005, "xyz");
 
   // Prevent ROOT from occasionally automatically zero-suppressing
-  novaStyle->SetHistMinimumZero();
+  ubStyle->SetHistMinimumZero();
 
   // Thicker lines
-  novaStyle->SetHistLineWidth(2);
-  novaStyle->SetFrameLineWidth(2);
-  novaStyle->SetFuncWidth(2);
+  ubStyle->SetHistLineWidth(2);
+  ubStyle->SetFrameLineWidth(2);
+  ubStyle->SetFuncWidth(2);
 
   // Set the number of tick marks to show
-  novaStyle->SetNdivisions(506, "xyz");
+  ubStyle->SetNdivisions(506, "xyz");
 
   // Set the tick mark style
-  novaStyle->SetPadTickX(1);
-  novaStyle->SetPadTickY(1);
+  ubStyle->SetPadTickX(0);
+  ubStyle->SetPadTickY(0);
 
   // Fonts
   const int kNovaFont = 42;
-  novaStyle->SetStatFont(kNovaFont);
-  novaStyle->SetLabelFont(kNovaFont, "xyz");
-  novaStyle->SetTitleFont(kNovaFont, "xyz");
-  novaStyle->SetTitleFont(kNovaFont, ""); // Apply same setting to plot titles
-  novaStyle->SetTextFont(kNovaFont);
-  novaStyle->SetLegendFont(kNovaFont);
+  ubStyle->SetStatFont(kNovaFont);
+  ubStyle->SetLabelFont(kNovaFont, "xyz");
+  ubStyle->SetTitleFont(kNovaFont, "xyz");
+  ubStyle->SetTitleFont(kNovaFont, ""); // Apply same setting to plot titles
+  ubStyle->SetTextFont(kNovaFont);
+  ubStyle->SetLegendFont(kNovaFont);
 
   // Get moodier colours for colz
   const Int_t NRGBs = 5;
@@ -89,25 +88,15 @@ void rootlogon()
   Double_t green[NRGBs] = { 0.00, 0.81, 1.00, 0.20, 0.00 };
   Double_t blue[NRGBs]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
   TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
-  novaStyle->SetNumberContours(NCont);
+  ubStyle->SetNumberContours(NCont);
 
-  gROOT->SetStyle("novaStyle");
+  gROOT->SetStyle("ubStyle");
 
   // Uncomment this line if you want to force all plots loaded from files
   // to use this same style
   gROOT->ForceStyle();
 }
 
-// Put a "NOvA Preliminary" tag in the corner
-void Preliminary()
-{
-  TLatex* prelim = new TLatex(.9, .95, "NO#nuA Preliminary");
-  prelim->SetTextColor(kBlue);
-  prelim->SetNDC();
-  prelim->SetTextSize(2/30.);
-  prelim->SetTextAlign(32);
-  prelim->Draw();
-}
 
 // Put a "uBooNE Simulation" tag in the corner
 void uBooNESimulation()
@@ -119,9 +108,7 @@ void uBooNESimulation()
   prelim->SetTextAlign(32);
   prelim->Draw();
 }
-
-// Put a "uBooNE Simulation" tag in the corner
-void Simulation()
+void uBooNESimulation_2()
 {
   TLatex* prelim = new TLatex(.95, .95, "MicroBooNE Simulation, Preliminary");
   prelim->SetTextColor(kGray+1);
@@ -131,6 +118,16 @@ void Simulation()
   prelim->Draw();
 }
 
+// Put a "MicroBooNE Simulation" tag in the corner
+void Simulation()
+{
+  TLatex* prelim = new TLatex(.9, .95, "MicroBooNE Simulation");
+  prelim->SetTextColor(kGray+1);
+  prelim->SetNDC();
+  prelim->SetTextSize(2/30.);
+  prelim->SetTextAlign(32);
+  prelim->Draw();
+}
 
 void CenterTitles(TH1* histo)
 {
