@@ -14,10 +14,10 @@ configure_file (
 install (FILES "${PROJECT_BINARY_DIR}/UBXSecAnaConfig.h" DESTINATION ${PROJECT_SOURCE_DIR}/Main)
 
 #Set the C++ standard to c++11.
-set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
 
 #Enable the use of runtime paths on Mac OSX.
-set(CMAKE_MACOSX_RPATH ON)
+#set(CMAKE_MACOSX_RPATH ON)
 
 # You need to tell CMake where to find the ROOT installation.
 # (https://root.cern.ch/how/integrate-root-my-project-cmake)

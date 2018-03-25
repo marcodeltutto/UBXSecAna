@@ -33,17 +33,12 @@
 #include "ReweightingPlotter.h"
 #include "CorrelationCalculator2D.h"
 
-
-//const bool _breakdownPlots = true;
-//const double targetPOT = 4.95e19;
-
-
 using namespace std;
 using namespace ubana;
 
 const bool _calculate_xsec = true;
 const bool _do_pm1sigma_plots = false;
-const bool _do_reweighting_plots = false;
+const bool _do_reweighting_plots = true;
 
 
 
@@ -252,14 +247,15 @@ int main(int argc, char* argv[]) {
   std::map<std::string,TH1D*> hmap_dqdx_trunc_mc = *temp_map;
   TH2D* h_dqdx_trunc_length_mc = (TH2D*)mc_bnbcosmic_file->Get("h_dqdx_trunc_length");
 
+
   std::map<std::string,std::map<std::string,TH1D*>>* temp_map_bs;
-  mc_bnbcosmic_file->GetObject("hmap_trkmom_bs", temp_map_bs);
+  mc_bnbcosmic_file->GetObject("hmap_trkmom_genie_pm1_bs", temp_map_bs);
   std::map<std::string,std::map<std::string,TH1D*>> map_bs = *temp_map_bs;
 
   // Bootstrap efficiency
-   mc_bnbcosmic_file->GetObject("bs_eff_mumom_num", temp_map);
+  mc_bnbcosmic_file->GetObject("bs_genie_pm1_eff_mumom_num", temp_map);
   std::map<std::string,TH1D*>  map_bs_eff_mumom_num_mc = *temp_map;
-  mc_bnbcosmic_file->GetObject("bs_eff_mumom_den", temp_map);
+  mc_bnbcosmic_file->GetObject("bs_genie_pm1_eff_mumom_den", temp_map);
   std::map<std::string,TH1D*>  map_bs_eff_mumom_den_mc = *temp_map;
   ubana::BootstrapTH1D bs_eff_mumom_num;
   bs_eff_mumom_num.SetAllHistograms(map_bs_eff_mumom_num_mc);
@@ -268,7 +264,7 @@ int main(int argc, char* argv[]) {
 
   // Boostrap reco-true
   std::map<std::string,TH2D*>* temp_map_bs2;
-  mc_bnbcosmic_file->GetObject("bs_true_reco_mom", temp_map_bs2);
+  mc_bnbcosmic_file->GetObject("bs_genie_pm1_true_reco_mom", temp_map_bs2);
   std::map<std::string,TH2D*> bs_true_reco_mom_mc = *temp_map_bs2;
 
   // Instantiate the GENIE reweighting plotter
@@ -291,6 +287,26 @@ int main(int argc, char* argv[]) {
     genie_rw_plotter.MakePlots(2, false, true);
     genie_rw_plotter.MakeBackgroundPlots(0, false, true);  
   }
+
+
+  // Events
+  mc_bnbcosmic_file->GetObject("hmap_trkmom_genie_multisim_bs", temp_map_bs);
+  std::map<std::string,std::map<std::string,TH1D*>> hmap_trkmom_genie_multisim_bs_mc = *temp_map_bs;
+
+  // Bootstrap efficiency
+  mc_bnbcosmic_file->GetObject("bs_genie_multisim_eff_mumom_num", temp_map);
+  std::map<std::string,TH1D*>  map_bs_genie_multisim_eff_mumom_num_mc = *temp_map;
+  mc_bnbcosmic_file->GetObject("bs_genie_multisim_eff_mumom_den", temp_map);
+  std::map<std::string,TH1D*>  map_bs_genie_multisim_eff_mumom_den_mc = *temp_map;
+  ubana::BootstrapTH1D bs_genie_multisim_eff_mumom_num;
+  bs_genie_multisim_eff_mumom_num.SetAllHistograms(map_bs_genie_multisim_eff_mumom_num_mc);
+  ubana::BootstrapTH1D bs_genie_multisim_eff_mumom_den;
+  bs_genie_multisim_eff_mumom_den.SetAllHistograms(map_bs_genie_multisim_eff_mumom_den_mc);
+
+  // Boostrap reco-true
+  mc_bnbcosmic_file->GetObject("bs_genie_multisim_true_reco_mom", temp_map_bs2);
+  std::map<std::string,TH2D*> bs_genie_multisim_true_reco_mom_mc = *temp_map_bs2;
+
 
 
 
@@ -406,6 +422,114 @@ int main(int argc, char* argv[]) {
     _xsec_calc.ExtractCrossSection("p_{#mu} [GeV]", "d#sigma/dp_{#mu} [10^{-38} cm^{2}/GeV]");
 
 
+
+gROOT->SetBatch(kTRUE);
+
+
+    // 
+    // Muon Momentum: Cross section reweighting
+    //
+
+    if (_do_reweighting_plots) {
+
+      std::map<std::string, TH1D*> xsec_mumom_per_universe;
+
+      for (auto it : bs_genie_multisim_true_reco_mom_mc) {
+
+        std::string universe_name = it.first;
+        TH2D* this_h_true_reco_mom = it.second;
+
+        std::cout << "this_h_true_reco_mom->GetBinContent(2, 2)" << this_h_true_reco_mom->GetBinContent(2, 2) << std::endl;
+
+        // Create a smearing matrix for this universe
+        TMatrix S_2d; S_2d.Clear(); S_2d.ResizeTo(7, 6);
+        ::ubana::MigrationMatrix2D migrationmatrix2d;
+        migrationmatrix2d.SetNBins(7, 6);
+        migrationmatrix2d.SetTrueRecoHistogram(this_h_true_reco_mom);
+        S_2d = migrationmatrix2d.CalculateMigrationMatrix();
+        //migrationmatrix2d.PlotMatrix();
+
+
+        // Create the MC histo map for this universe
+        std::map<std::string, TH1D*> hmap_trkmom_mc_universe;
+       for (auto i : hmap_trkmom_genie_multisim_bs_mc) {
+
+          std::map<std::string, TH1D*> temp_map = i.second;
+
+          for (auto i2 : temp_map) {
+
+            if (i2.first == universe_name) {
+              hmap_trkmom_mc_universe[i.first] = i2.second;
+              break;
+            }
+          }      
+        }
+    
+        std::cout << "just before getting eff for universe " <<  universe_name << std::endl;
+        // Get the efficiency num and den for this universe
+        auto it_find = map_bs_genie_multisim_eff_mumom_num_mc.find(universe_name);
+        if (it_find == map_bs_genie_multisim_eff_mumom_num_mc.end()) {
+          std::cout << "Cannot find efficiency numerator for universe " << universe_name << std::endl;
+          exit(0);
+        }
+        TH1D* h_eff_num_universe = it_find->second;
+        std::cout << "eff num bin 1 : " << h_eff_num_universe->GetBinContent(1) << std::endl;
+        it_find = map_bs_genie_multisim_eff_mumom_den_mc.find(universe_name);
+        if (it_find == map_bs_genie_multisim_eff_mumom_den_mc.end()) {
+          std::cout << "Cannot find efficiency denominator for universe " << universe_name << std::endl;
+          exit(0);
+        }
+        TH1D* h_eff_den_universe = it_find->second;
+
+
+        _xsec_calc.Reset();
+        h_trkmom_total_extbnb->Scale(1./scale_factor_extbnb);
+        _xsec_calc.SetHistograms(hmap_trkmom_mc_universe, h_trkmom_total_bnbon, h_trkmom_total_extbnb);  
+        _xsec_calc.SetTruthHistograms(h_eff_num_universe, h_eff_den_universe, h_true_reco_mom);
+        _xsec_calc.SetTruthXSec(h_truth_xsec_mumom);
+        _xsec_calc.SetNameAndLabel("trkmom", ";Candidate Track Momentum (MCS) [GeV]; Selected Events");
+        _xsec_calc.ProcessPlots();
+        _xsec_calc.Draw();
+        _xsec_calc.Draw(hist_to_subtract);
+        _xsec_calc.SetMigrationMatrix(S_2d);
+        _xsec_calc.Smear(7, 6);
+        TH1D* universe_xsec = _xsec_calc.ExtractCrossSection("p_{#mu} [GeV]", "d#sigma/dp_{#mu} [10^{-38} cm^{2}/GeV]");
+
+        xsec_mumom_per_universe[universe_name] = universe_xsec;
+
+        //exit(0);
+        //break;
+
+      }
+
+      ubana::BootstrapTH1D xsec_mumom_bs;
+      xsec_mumom_bs.SetAllHistograms(xsec_mumom_per_universe);
+
+      //genie_rw_plotter.SetXSecBootstrap(xsec_mumom_bs);
+      //genie_rw_plotter.MakeXsecDiffPlots(true);
+    
+      // Covariance Matrix
+      ubana::CorrelationCalculator2D _cov_calc;
+      _cov_calc.SetBootstrap(xsec_mumom_bs);
+      _cov_calc.CalculateCovarianceMatrix();
+      _cov_calc.PlotMatrices();
+
+gROOT->SetBatch(kFALSE);
+
+      TCanvas * genie_multisim_xsec_canvas = new TCanvas();
+      for (auto it : xsec_mumom_per_universe) {
+        it.second->Draw("histo same");
+      }
+      genie_multisim_xsec_canvas->SaveAs("genie_multisim_xsec_all.pdf");
+
+
+    } // _do_reweighting_plots
+
+
+
+/*
+
+
     // 
     // Muon Momentum: Cross section reweighting
     //
@@ -479,6 +603,7 @@ int main(int argc, char* argv[]) {
       _cov_calc.PlotMatrices();
 
     } // _do_reweighting_plots
+    */
 
 
 

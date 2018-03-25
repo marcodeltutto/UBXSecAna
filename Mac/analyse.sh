@@ -1,6 +1,15 @@
 #! /bin/bash
 
-Analyse -m ubxsecana_output_bnbcosmic_mcc8.7_test1.root -c ubxsecana_output_intimecosmic_mcc8.3_v2.0.2.root -b ubxsecana_output_bnbon_mcc8.7_test1.root -e ubxsecana_output_extbnb_mcc8.7_test1.root -p 4.106e+19 -n 9161991 -g 48845676
+#Analyse -m ubxsecana_output_bnbcosmic_mcc8.7_test1.root -c ubxsecana_output_intimecosmic_mcc8.3_v2.0.2.root -b ubxsecana_output_bnbon_mcc8.7_test1.root -e ubxsecana_output_extbnb_mcc8.7_test1.root -p 4.106e+19 -n 9161991 -g 48845676
+
+#Analyse -m ubxsecana_output_bnbcosmic_mcc8.7_test2.root -c ubxsecana_output_intimecosmic_mcc8.3_v2.0.2.root -b ubxsecana_output_bnbon_mcc8.7_test2.root -e ubxsecana_output_extbnb_mcc8.7_test2.root -p 4.846e+19 -n 10810204 -g 15337043
+
+#Analyse -m ubxsecana_output_bnbcosmic_mcc8.7_test5.root -c ubxsecana_output_intimecosmic_mcc8.3_v2.0.2.root -b ubxsecana_output_bnbon_mcc8.7_test5.root -e ubxsecana_output_extbnb_mcc8.7_test5.root -p 4.393e+19 -n 9797673 -g 15308426
+
+Analyse -m ubxsecana_output_bnbcosmic_mcc8.7_test6.root -c ubxsecana_output_intimecosmic_mcc8.3_v2.0.2.root -b ubxsecana_output_bnbon_mcc8.7_test6.root -e ubxsecana_output_extbnb_mcc8.7_test6.root -p 4.852e+19 -n 10820589 -g 15482261
+
+#Analyse -m ubxsecana_output_bnbcosmic_mcc8.7_test7.root -c ubxsecana_output_intimecosmic_mcc8.3_v2.0.2.root -b ubxsecana_output_bnbon_mcc8.7_test7.root -e ubxsecana_output_extbnb_mcc8.7_test7.root -p 4.817e+19 -n 10744289 -g 15369720
+
 
 
 #Analyse -m ubxsecana_output_bnbcosmic_mcc8.6_stopmu_test29.root -c ubxsecana_output_intimecosmic_mcc8.3_v2.0.2.root -b ubxsecana_output_bnbon_mcc8.6_stopmu_test29.root -e ubxsecana_output_extbnb_mcc8.6_stopmu_test29.root -p 4.54e+19 -n 10141372 -g 14386908

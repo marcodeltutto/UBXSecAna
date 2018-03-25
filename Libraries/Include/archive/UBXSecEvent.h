@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Fri Mar 23 16:26:16 2018 by ROOT version 6.06/06
+// Wed Mar 14 17:00:13 2018 by ROOT version 6.06/06
 // from TTree tree/
-// found on file: ../Files/ubxsec_output_mc_bnbcosmic_mcc8.7_test6.root
+// found on file: ../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root
 //////////////////////////////////////////////////////////
 
 #ifndef UBXSecEvent_h
@@ -135,6 +135,27 @@ public :
    vector<double>  slc_muoncandidate_linearity;
    vector<double>  slc_muoncandidate_perc_used_hits_in_cluster;
    vector<double>  slc_muoncandidate_maxscatteringangle;
+   vector<double>  slc_othershowers_longest_length;
+   vector<double>  slc_othershowers_longest_startx;
+   vector<double>  slc_othershowers_longest_starty;
+   vector<double>  slc_othershowers_longest_startz;
+   vector<double>  slc_othershowers_longest_phi;
+   vector<double>  slc_othershowers_longest_theta;
+   vector<double>  slc_othershowers_longest_openangle;
+   vector<double>  slc_othershowers_forward_length;
+   vector<double>  slc_othershowers_forward_startx;
+   vector<double>  slc_othershowers_forward_starty;
+   vector<double>  slc_othershowers_forward_startz;
+   vector<double>  slc_othershowers_forward_phi;
+   vector<double>  slc_othershowers_forward_theta;
+   vector<double>  slc_othershowers_forward_openangle;
+   vector<double>  slc_othershowers_flashmatch_length;
+   vector<double>  slc_othershowers_flashmatch_startx;
+   vector<double>  slc_othershowers_flashmatch_starty;
+   vector<double>  slc_othershowers_flashmatch_startz;
+   vector<double>  slc_othershowers_flashmatch_phi;
+   vector<double>  slc_othershowers_flashmatch_theta;
+   vector<double>  slc_othershowers_flashmatch_openangle;
    Int_t           nbeamfls;
    vector<double>  beamfls_time;
    vector<double>  beamfls_pe;
@@ -151,18 +172,10 @@ public :
    vector<double>  tvtx_y;
    vector<double>  tvtx_z;
    Double_t        pot;
-   Int_t           evtwgt_genie_pm1_nfunc;
-   vector<string>  evtwgt_genie_pm1_funcname;
-   vector<int>     evtwgt_genie_pm1_nweight;
-   vector<vector<double> > evtwgt_genie_pm1_weight;
-   Int_t           evtwgt_genie_multisim_nfunc;
-   vector<string>  evtwgt_genie_multisim_funcname;
-   vector<int>     evtwgt_genie_multisim_nweight;
-   vector<vector<double> > evtwgt_genie_multisim_weight;
-   Int_t           evtwgt_flux_multisim_nfunc;
-   vector<string>  evtwgt_flux_multisim_funcname;
-   vector<int>     evtwgt_flux_multisim_nweight;
-   vector<vector<double> > evtwgt_flux_multisim_weight;
+   Int_t           evtwgt_nfunc;
+   vector<string>  evtwgt_funcname;
+   vector<int>     evtwgt_nweight;
+   vector<vector<double> > evtwgt_weight;
    Int_t           _default_value;
 
    // List of branches
@@ -276,6 +289,27 @@ public :
    TBranch        *b_ubxsec_event_split_slc_muoncandidate_linearity;   //!
    TBranch        *b_ubxsec_event_split_slc_muoncandidate_perc_used_hits_in_cluster;   //!
    TBranch        *b_ubxsec_event_split_slc_muoncandidate_maxscatteringangle;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_longest_length;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_longest_startx;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_longest_starty;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_longest_startz;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_longest_phi;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_longest_theta;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_longest_openangle;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_forward_length;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_forward_startx;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_forward_starty;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_forward_startz;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_forward_phi;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_forward_theta;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_forward_openangle;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_flashmatch_length;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_flashmatch_startx;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_flashmatch_starty;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_flashmatch_startz;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_flashmatch_phi;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_flashmatch_theta;   //!
+   TBranch        *b_ubxsec_event_split_slc_othershowers_flashmatch_openangle;   //!
    TBranch        *b_ubxsec_event_split_nbeamfls;   //!
    TBranch        *b_ubxsec_event_split_beamfls_time;   //!
    TBranch        *b_ubxsec_event_split_beamfls_pe;   //!
@@ -292,18 +326,10 @@ public :
    TBranch        *b_ubxsec_event_split_tvtx_y;   //!
    TBranch        *b_ubxsec_event_split_tvtx_z;   //!
    TBranch        *b_ubxsec_event_split_pot;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_pm1_nfunc;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_pm1_funcname;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_pm1_nweight;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_pm1_weight;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_multisim_nfunc;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_multisim_funcname;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_multisim_nweight;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_genie_multisim_weight;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_flux_multisim_nfunc;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_flux_multisim_funcname;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_flux_multisim_nweight;   //!
-   TBranch        *b_ubxsec_event_split_evtwgt_flux_multisim_weight;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_nfunc;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_funcname;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_nweight;   //!
+   TBranch        *b_ubxsec_event_split_evtwgt_weight;   //!
    TBranch        *b_ubxsec_event_split__default_value;   //!
 
    UBXSecEvent(TTree *tree=0);
@@ -325,11 +351,11 @@ UBXSecEvent::UBXSecEvent(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../Files/ubxsec_output_mc_bnbcosmic_mcc8.7_test6.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("../Files/ubxsec_output_mc_bnbcosmic_mcc8.7_test6.root");
+         f = new TFile("../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("../Files/ubxsec_output_mc_bnbcosmic_mcc8.7_test6.root:/UBXSec");
+      TDirectory * dir = (TDirectory*)f->Get("../files/mcc8.6_stopmu_test/ubxsec_output_dl_p03_mc_bnbcosmic_mcc8.6_stopmu_test28.root:/UBXSec");
       dir->GetObject("tree",tree);
 
    }
@@ -487,6 +513,27 @@ void UBXSecEvent::Init(TTree *tree)
    fChain->SetBranchAddress("slc_muoncandidate_linearity", &slc_muoncandidate_linearity, &b_ubxsec_event_split_slc_muoncandidate_linearity);
    fChain->SetBranchAddress("slc_muoncandidate_perc_used_hits_in_cluster", &slc_muoncandidate_perc_used_hits_in_cluster, &b_ubxsec_event_split_slc_muoncandidate_perc_used_hits_in_cluster);
    fChain->SetBranchAddress("slc_muoncandidate_maxscatteringangle", &slc_muoncandidate_maxscatteringangle, &b_ubxsec_event_split_slc_muoncandidate_maxscatteringangle);
+   fChain->SetBranchAddress("slc_othershowers_longest_length", &slc_othershowers_longest_length, &b_ubxsec_event_split_slc_othershowers_longest_length);
+   fChain->SetBranchAddress("slc_othershowers_longest_startx", &slc_othershowers_longest_startx, &b_ubxsec_event_split_slc_othershowers_longest_startx);
+   fChain->SetBranchAddress("slc_othershowers_longest_starty", &slc_othershowers_longest_starty, &b_ubxsec_event_split_slc_othershowers_longest_starty);
+   fChain->SetBranchAddress("slc_othershowers_longest_startz", &slc_othershowers_longest_startz, &b_ubxsec_event_split_slc_othershowers_longest_startz);
+   fChain->SetBranchAddress("slc_othershowers_longest_phi", &slc_othershowers_longest_phi, &b_ubxsec_event_split_slc_othershowers_longest_phi);
+   fChain->SetBranchAddress("slc_othershowers_longest_theta", &slc_othershowers_longest_theta, &b_ubxsec_event_split_slc_othershowers_longest_theta);
+   fChain->SetBranchAddress("slc_othershowers_longest_openangle", &slc_othershowers_longest_openangle, &b_ubxsec_event_split_slc_othershowers_longest_openangle);
+   fChain->SetBranchAddress("slc_othershowers_forward_length", &slc_othershowers_forward_length, &b_ubxsec_event_split_slc_othershowers_forward_length);
+   fChain->SetBranchAddress("slc_othershowers_forward_startx", &slc_othershowers_forward_startx, &b_ubxsec_event_split_slc_othershowers_forward_startx);
+   fChain->SetBranchAddress("slc_othershowers_forward_starty", &slc_othershowers_forward_starty, &b_ubxsec_event_split_slc_othershowers_forward_starty);
+   fChain->SetBranchAddress("slc_othershowers_forward_startz", &slc_othershowers_forward_startz, &b_ubxsec_event_split_slc_othershowers_forward_startz);
+   fChain->SetBranchAddress("slc_othershowers_forward_phi", &slc_othershowers_forward_phi, &b_ubxsec_event_split_slc_othershowers_forward_phi);
+   fChain->SetBranchAddress("slc_othershowers_forward_theta", &slc_othershowers_forward_theta, &b_ubxsec_event_split_slc_othershowers_forward_theta);
+   fChain->SetBranchAddress("slc_othershowers_forward_openangle", &slc_othershowers_forward_openangle, &b_ubxsec_event_split_slc_othershowers_forward_openangle);
+   fChain->SetBranchAddress("slc_othershowers_flashmatch_length", &slc_othershowers_flashmatch_length, &b_ubxsec_event_split_slc_othershowers_flashmatch_length);
+   fChain->SetBranchAddress("slc_othershowers_flashmatch_startx", &slc_othershowers_flashmatch_startx, &b_ubxsec_event_split_slc_othershowers_flashmatch_startx);
+   fChain->SetBranchAddress("slc_othershowers_flashmatch_starty", &slc_othershowers_flashmatch_starty, &b_ubxsec_event_split_slc_othershowers_flashmatch_starty);
+   fChain->SetBranchAddress("slc_othershowers_flashmatch_startz", &slc_othershowers_flashmatch_startz, &b_ubxsec_event_split_slc_othershowers_flashmatch_startz);
+   fChain->SetBranchAddress("slc_othershowers_flashmatch_phi", &slc_othershowers_flashmatch_phi, &b_ubxsec_event_split_slc_othershowers_flashmatch_phi);
+   fChain->SetBranchAddress("slc_othershowers_flashmatch_theta", &slc_othershowers_flashmatch_theta, &b_ubxsec_event_split_slc_othershowers_flashmatch_theta);
+   fChain->SetBranchAddress("slc_othershowers_flashmatch_openangle", &slc_othershowers_flashmatch_openangle, &b_ubxsec_event_split_slc_othershowers_flashmatch_openangle);
    fChain->SetBranchAddress("nbeamfls", &nbeamfls, &b_ubxsec_event_split_nbeamfls);
    fChain->SetBranchAddress("beamfls_time", &beamfls_time, &b_ubxsec_event_split_beamfls_time);
    fChain->SetBranchAddress("beamfls_pe", &beamfls_pe, &b_ubxsec_event_split_beamfls_pe);
@@ -503,18 +550,10 @@ void UBXSecEvent::Init(TTree *tree)
    fChain->SetBranchAddress("tvtx_y", &tvtx_y, &b_ubxsec_event_split_tvtx_y);
    fChain->SetBranchAddress("tvtx_z", &tvtx_z, &b_ubxsec_event_split_tvtx_z);
    fChain->SetBranchAddress("pot", &pot, &b_ubxsec_event_split_pot);
-   fChain->SetBranchAddress("evtwgt_genie_pm1_nfunc", &evtwgt_genie_pm1_nfunc, &b_ubxsec_event_split_evtwgt_genie_pm1_nfunc);
-   fChain->SetBranchAddress("evtwgt_genie_pm1_funcname", &evtwgt_genie_pm1_funcname, &b_ubxsec_event_split_evtwgt_genie_pm1_funcname);
-   fChain->SetBranchAddress("evtwgt_genie_pm1_nweight", &evtwgt_genie_pm1_nweight, &b_ubxsec_event_split_evtwgt_genie_pm1_nweight);
-   fChain->SetBranchAddress("evtwgt_genie_pm1_weight", &evtwgt_genie_pm1_weight, &b_ubxsec_event_split_evtwgt_genie_pm1_weight);
-   fChain->SetBranchAddress("evtwgt_genie_multisim_nfunc", &evtwgt_genie_multisim_nfunc, &b_ubxsec_event_split_evtwgt_genie_multisim_nfunc);
-   fChain->SetBranchAddress("evtwgt_genie_multisim_funcname", &evtwgt_genie_multisim_funcname, &b_ubxsec_event_split_evtwgt_genie_multisim_funcname);
-   fChain->SetBranchAddress("evtwgt_genie_multisim_nweight", &evtwgt_genie_multisim_nweight, &b_ubxsec_event_split_evtwgt_genie_multisim_nweight);
-   fChain->SetBranchAddress("evtwgt_genie_multisim_weight", &evtwgt_genie_multisim_weight, &b_ubxsec_event_split_evtwgt_genie_multisim_weight);
-   fChain->SetBranchAddress("evtwgt_flux_multisim_nfunc", &evtwgt_flux_multisim_nfunc, &b_ubxsec_event_split_evtwgt_flux_multisim_nfunc);
-   fChain->SetBranchAddress("evtwgt_flux_multisim_funcname", &evtwgt_flux_multisim_funcname, &b_ubxsec_event_split_evtwgt_flux_multisim_funcname);
-   fChain->SetBranchAddress("evtwgt_flux_multisim_nweight", &evtwgt_flux_multisim_nweight, &b_ubxsec_event_split_evtwgt_flux_multisim_nweight);
-   fChain->SetBranchAddress("evtwgt_flux_multisim_weight", &evtwgt_flux_multisim_weight, &b_ubxsec_event_split_evtwgt_flux_multisim_weight);
+   fChain->SetBranchAddress("evtwgt_nfunc", &evtwgt_nfunc, &b_ubxsec_event_split_evtwgt_nfunc);
+   fChain->SetBranchAddress("evtwgt_funcname", &evtwgt_funcname, &b_ubxsec_event_split_evtwgt_funcname);
+   fChain->SetBranchAddress("evtwgt_nweight", &evtwgt_nweight, &b_ubxsec_event_split_evtwgt_nweight);
+   fChain->SetBranchAddress("evtwgt_weight", &evtwgt_weight, &b_ubxsec_event_split_evtwgt_weight);
    fChain->SetBranchAddress("_default_value", &_default_value, &b_ubxsec_event_split__default_value);
    Notify();
 }

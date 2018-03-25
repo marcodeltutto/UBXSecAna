@@ -60,7 +60,7 @@ namespace ubana {
           double N_i_s = uni_histo.GetBinContent(i+1);
           double N_i_cv = _bs.GetNominal()->GetBinContent(i+1);
           double N_j_s = uni_histo.GetBinContent(j+1);
-          double N_j_cv = _bs.GetNominal()->GetBinContent(i+1);
+          double N_j_cv = _bs.GetNominal()->GetBinContent(j+1);
 
           _M[i][j] += (N_i_s - N_i_cv) * (N_j_s - N_j_cv) / (double)_bs.GetNUniverses();
 

@@ -734,8 +734,8 @@ namespace ubana {
     leg->AddEntry(histo_anumu, "#bar{#nu}_{#mu} CC (nominal)");
     leg->AddEntry(histo_nue,   "#nu_{e} CC (nominal)");
     leg->AddEntry(histo_nc,    "NC all flavours (nominal)");
-    leg->AddEntry(histo_nue,   "OUTFV (nominal)");
-    leg->AddEntry(histo_nc,    "Cosmic (nominal)");
+    leg->AddEntry(histo_outfv,   "OUTFV (nominal)");
+    leg->AddEntry(histo_cosmic,    "Cosmic (nominal)");
 
     leg->AddEntry(histo_numu_p1,   "#nu_{#mu} CC (" + GetLegendName(function_name) + " + 1 #sigma)");
     leg->AddEntry(histo_anumu_p1,  "#bar{#nu}_{#mu} CC (" + GetLegendName(function_name) + " + 1 #sigma)");

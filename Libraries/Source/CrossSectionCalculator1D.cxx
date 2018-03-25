@@ -93,9 +93,9 @@ namespace ubana {
   {
 
     _hmap_bnbcosmic = bnbcosmic;
-    _h_bnbon = bnbon;
-    _h_extbnb = extbnb;
-    _h_intimecosmic = intimecosmic;
+    _h_bnbon = (TH1D*)bnbon->Clone("_h_bnbon");
+    _h_extbnb = (TH1D*)extbnb->Clone("_h_extbnb");
+    _h_intimecosmic = (TH1D*)intimecosmic->Clone("_h_intimecosmic");
 
   }
 
@@ -395,6 +395,10 @@ namespace ubana {
 
     // And update the total histogram
     _hmap_bnbcosmic["total"]->Add(_h_extbnb);
+
+    std::cout << "beam-on integral " << _h_bnbon->Integral() << std::endl;
+    std::cout << "beam-off integral " << _hmap_bnbcosmic["beam-off"]->Integral() << std::endl;
+    std::cout << "mc signal " << _hmap_bnbcosmic["signal"]->Integral() << std::endl;
 
   }
 

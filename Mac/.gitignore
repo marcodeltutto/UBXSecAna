@@ -4,4 +4,7 @@
 *.tex
 output
 output_data_mc
+EvtWgtEfficiencyPlots
+EvtWgtEventPlots
+EvtWgtXSecDiffPlots
 

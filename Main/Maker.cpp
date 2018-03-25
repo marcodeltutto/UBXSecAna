@@ -37,7 +37,7 @@
 
 const bool _breakdownPlots = true;
 const bool _makePlots = false;
-const bool _fill_bootstrap = false;
+const bool _fill_bootstrap = true;
 const bool _check_duplicate_events = false;
 
 double _beamSpillStarts = 3.2;  // us
@@ -120,13 +120,13 @@ double eff_uncertainty(int _n, int _N) {
 
 //___________________________________________________________________________________________________
 void FillBootstrap(double fill_value,
-                   std::map<std::string,std::map<std::string,TH1D*>> hmap_trkmom_bs, 
+                   std::map<std::string,std::map<std::string,TH1D*>> hmap_trkmom_genie_pm1_bs, 
                    std::string channel_namel, 
                    std::vector<std::string> fname, 
-                   std::vector<double> wgts) {
+                   std::vector<double> wgts_genie) {
 
-  auto iter = hmap_trkmom_bs.find(channel_namel);
-  if (iter == hmap_trkmom_bs.end()) {
+  auto iter = hmap_trkmom_genie_pm1_bs.find(channel_namel);
+  if (iter == hmap_trkmom_genie_pm1_bs.end()) {
     std::cout << "Can't find " << channel_namel << std::endl;
     return;
   }
@@ -136,9 +136,9 @@ void FillBootstrap(double fill_value,
 
   for (size_t i = 0; i < fname.size(); i++) {
 
-    this_map[fname.at(i)]->Fill(fill_value, wgts.at(i));
+    //std::cout << i << ": Fill value: " << fill_value << ", weight: " << wgts_genie.at(i) << ", name is " << fname.at(i) << std::endl;
 
-    //std::cout << "Fill value: " << fill_value << ", weight: " << wgts.at(i) << std::endl;
+    this_map[fname.at(i)]->Fill(fill_value, wgts_genie.at(i));
 
   }
 
@@ -148,18 +148,18 @@ void FillBootstrap(double fill_value,
 
 //___________________________________________________________________________________________________
 void FillBootstrap(double fill_value,
-                   std::map<std::string,TH1D*> hmap_trkmom_bs, 
+                   std::map<std::string,TH1D*> hmap_trkmom_genie_pm1_bs, 
                    std::vector<std::string> fname, 
-                   std::vector<double> wgts) {
+                   std::vector<double> wgts_genie) {
 
 
-  hmap_trkmom_bs["nominal"]->Fill(fill_value);
+  hmap_trkmom_genie_pm1_bs["nominal"]->Fill(fill_value);
 
   for (size_t i = 0; i < fname.size(); i++) {
 
-    hmap_trkmom_bs[fname.at(i)]->Fill(fill_value, wgts.at(i));
+    hmap_trkmom_genie_pm1_bs[fname.at(i)]->Fill(fill_value, wgts_genie.at(i));
 
-    //std::cout << "Fill value: " << fill_value << ", weight: " << wgts.at(i) << std::endl;
+    //std::cout << "Fill value: " << fill_value << ", weight: " << wgts_genie_pm1.at(i) << std::endl;
 
   }
 
@@ -170,18 +170,18 @@ void FillBootstrap(double fill_value,
 //___________________________________________________________________________________________________
 void FillBootstrap(double fill_value1,
                    double fill_value2,
-                   std::map<std::string,TH2D*> hmap_trkmom_bs, 
+                   std::map<std::string,TH2D*> hmap_trkmom_genie_pm1_bs, 
                    std::vector<std::string> fname, 
-                   std::vector<double> wgts) {
+                   std::vector<double> wgts_genie) {
 
 
-  hmap_trkmom_bs["nominal"]->Fill(fill_value1, fill_value2);
+  hmap_trkmom_genie_pm1_bs["nominal"]->Fill(fill_value1, fill_value2);
 
   for (size_t i = 0; i < fname.size(); i++) {
 
-    hmap_trkmom_bs[fname.at(i)]->Fill(fill_value1, fill_value2, wgts.at(i));
+    hmap_trkmom_genie_pm1_bs[fname.at(i)]->Fill(fill_value1, fill_value2, wgts_genie.at(i));
 
-    //std::cout << "Fill value: " << fill_value << ", weight: " << wgts.at(i) << std::endl;
+    //std::cout << "Fill value: " << fill_value << ", weight: " << wgts_genie_pm1.at(i) << std::endl;
 
   }
 
@@ -312,15 +312,27 @@ int main(int argc, char* argv[]) {
   //* Starting ROOT application
   //*************************
 
-  std::string env = std::getenv("UBXSecAnaRoot");
+  char * env_c = std::getenv("UBXSecAnaRoot");
+  if (env_c == NULL) {
+    std::cout << "Enviroment variable not found." << std::endl;
+    std::cout << "Have you sourced the setup script?" << std::endl;
+    std::cout << "Exiting now." << std::endl;
+    exit(0);
+  }
+
+  std::string env (env_c);
+  std::cout << "env is " << env << std::endl;
   
   //TApplication* rootapp = new TApplication("ROOT Application",&argc, argv);
   gROOT->SetBatch(kTRUE);
   gROOT->ProcessLine("gErrorIgnoreLevel = 2001;"); // 1001: INFO, 2001: WARNINGS, 3001: ERRORS
 
   std::string library = ".x " + env + "rootlogon.C";
-  gROOT->ProcessLine(library.c_str());
- 
+  //gROOT->ProcessLine(library.c_str());
+  gROOT->SetMacroPath(env.c_str());
+  gROOT->ProcessLine(".x rootlogon.C");
+
+
   library = ".L " + env + "loader_C.so";
   library = ".L " + env + "loader.C+";
   gROOT->ProcessLine(library.c_str());
@@ -481,8 +493,12 @@ int main(int argc, char* argv[]) {
 
   TH2D * h_true_reco_mom= new TH2D("h_true_reco_mom", ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, bins_mumom, 6, bins_mumom);
 
-  std::map<std::string,TH2D*> bs_true_reco_mom;
-  bs_true_reco_mom["nominal"] = new TH2D("bs_true_reco_mom_nominal", ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, bins_mumom, 6, bins_mumom);
+  std::map<std::string,TH2D*> bs_genie_pm1_true_reco_mom;
+  bs_genie_pm1_true_reco_mom["nominal"] = new TH2D("bs_genie_pm1_true_reco_mom_nominal", ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, bins_mumom, 6, bins_mumom);
+  std::map<std::string,TH2D*> bs_genie_multisim_true_reco_mom;
+  bs_genie_multisim_true_reco_mom["nominal"] = new TH2D("bs_genie_multisim_true_reco_mom_nominal", ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, bins_mumom, 6, bins_mumom);
+
+  
 
   double bins_mucostheta[10] = {-1.00, -0.50, 0.00, 0.27, 0.45, 0.62, 0.76, 0.86, 0.94, 1.00};
 
@@ -505,10 +521,14 @@ int main(int argc, char* argv[]) {
 
   //BootstrapTH1D* h_eff_mumom_num_bs = new BootstrapTH1D("h_eff_mumom_num_bs", "h_eff_mumom_num_bs", 6, bins_mumom);
   //BootstrapTH1D* h_eff_mumom_den_bs = new BootstrapTH1D("h_eff_mumom_den_bs", "h_eff_mumom_den_bs", 6, bins_mumom);
-  std::map<std::string, TH1D*> bs_eff_mumom_num;
-  bs_eff_mumom_num["nominal"] = new TH1D("h_eff_mumom_num_nom", "h_eff_mumom_num", 6, bins_mumom);
-  std::map<std::string, TH1D*> bs_eff_mumom_den;
-  bs_eff_mumom_den["nominal"] = new TH1D("h_eff_mumom_den_nom", "h_eff_mumom_den", 6, bins_mumom);
+  std::map<std::string, TH1D*> bs_genie_pm1_eff_mumom_num;
+  bs_genie_pm1_eff_mumom_num["nominal"] = new TH1D("bs_genie_pm1_eff_mumom_num_nominal", "h_eff_mumom_num", 6, bins_mumom);
+  std::map<std::string, TH1D*> bs_genie_pm1_eff_mumom_den;
+  bs_genie_pm1_eff_mumom_den["nominal"] = new TH1D("bs_genie_pm1_eff_mumom_den_nominal", "h_eff_mumom_den", 6, bins_mumom);
+  std::map<std::string, TH1D*> bs_genie_multisim_eff_mumom_num;
+  bs_genie_multisim_eff_mumom_num["nominal"] = new TH1D("bs_genie_multisim_eff_mumom_num_nominal_nominal", "h_eff_mumom_num", 6, bins_mumom);
+  std::map<std::string, TH1D*> bs_genie_multisim_eff_mumom_den;
+  bs_genie_multisim_eff_mumom_den["nominal"] = new TH1D("bs_genie_multisim_eff_mumom_den_nominal_nominal", "h_eff_mumom_den", 6, bins_mumom);
 
   TH1D* h_eff_mult_num = new TH1D("h_eff_mult_num", "h_eff_mult_num", 20, 0, 20);
   TH1D* h_eff_mult_den = new TH1D("h_eff_mult_den", "h_eff_mult_den", 20, 0, 20);
@@ -708,45 +728,63 @@ int main(int argc, char* argv[]) {
   hmap_trkmom["signal_nostopmu"] = new TH1D("h_trkmom_signal_nostopmu", "; Track length;", 6, bins_mumom);
 
 /*
-  std::map<std::string,BootstrapTH1D*> hmap_trkmom_bs;
-  hmap_trkmom_bs["total"] = new BootstrapTH1D("h_trkmom_total", "; Track length;", 6, bins_mumom); // 20, 0, 2.5
-  hmap_trkmom_bs["signal"] = new BootstrapTH1D("h_trkmom_signal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["cosmic"] = new BootstrapTH1D("h_trkmom_cosmic", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["cosmic_stopmu"] = new BootstrapTH1D("h_trkmom_cosmic_stopmu", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["cosmic_nostopmu"] = new BootstrapTH1D("h_trkmom_cosmic_nostopmu", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["outfv"] = new BootstrapTH1D("h_trkmom_outfv", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["outfv_stopmu"] = new BootstrapTH1D("h_trkmom_outfv_stopmu", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["outfv_nostopmu"] = new BootstrapTH1D("h_trkmom_outfv_nostopmu", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc"] = new BootstrapTH1D("h_trkmom_nc", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc_proton"] = new BootstrapTH1D("h_trkmom_nc_proton", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc_pion"] = new BootstrapTH1D("h_trkmom_nc_pion", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc_other"] = new BootstrapTH1D("h_trkmom_nc_other", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["anumu"] = new BootstrapTH1D("h_trkmom_anumu", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nue"] = new BootstrapTH1D("h_trkmom_nue", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["signal_stopmu"] = new BootstrapTH1D("h_trkmom_signal_stopmu", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["signal_nostopmu"] = new BootstrapTH1D("h_trkmom_signal_nostopmu", "; Track length;", 6, bins_mumom);
+  std::map<std::string,BootstrapTH1D*> hmap_trkmom_genie_pm1_bs;
+  hmap_trkmom_genie_pm1_bs["total"] = new BootstrapTH1D("h_trkmom_total", "; Track length;", 6, bins_mumom); // 20, 0, 2.5
+  hmap_trkmom_genie_pm1_bs["signal"] = new BootstrapTH1D("h_trkmom_signal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["cosmic"] = new BootstrapTH1D("h_trkmom_cosmic", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["cosmic_stopmu"] = new BootstrapTH1D("h_trkmom_cosmic_stopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["cosmic_nostopmu"] = new BootstrapTH1D("h_trkmom_cosmic_nostopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["outfv"] = new BootstrapTH1D("h_trkmom_outfv", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["outfv_stopmu"] = new BootstrapTH1D("h_trkmom_outfv_stopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["outfv_nostopmu"] = new BootstrapTH1D("h_trkmom_outfv_nostopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc"] = new BootstrapTH1D("h_trkmom_nc", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc_proton"] = new BootstrapTH1D("h_trkmom_nc_proton", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc_pion"] = new BootstrapTH1D("h_trkmom_nc_pion", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc_other"] = new BootstrapTH1D("h_trkmom_nc_other", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["anumu"] = new BootstrapTH1D("h_trkmom_anumu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nue"] = new BootstrapTH1D("h_trkmom_nue", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["signal_stopmu"] = new BootstrapTH1D("h_trkmom_signal_stopmu", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["signal_nostopmu"] = new BootstrapTH1D("h_trkmom_signal_nostopmu", "; Track length;", 6, bins_mumom);
   */
-  std::map<std::string,std::map<std::string,TH1D*>> hmap_trkmom_bs;
+  std::map<std::string,std::map<std::string,TH1D*>> hmap_trkmom_genie_pm1_bs;
   //std::map<std::string, TH1D*> mymap;
   //mymap["nominal"] = new TH1D("h_trkmom_total_nominal", "; Track length;", 6, bins_mumom); 
-  hmap_trkmom_bs["total"]["nominal"] = new TH1D("h_trkmom_total_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["total"]["nominal"] = new TH1D("h_trkmom_total_nominal", "; Track length;", 6, bins_mumom); // 20, 0, 2.5
-  hmap_trkmom_bs["signal"]["nominal"] = new TH1D("h_trkmom_signal_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["cosmic"]["nominal"] = new TH1D("h_trkmom_cosmic_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["cosmic_stopmu"]["nominal"] = new TH1D("h_trkmom_cosmic_stopmu_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["cosmic_nostopmu"]["nominal"] = new TH1D("h_trkmom_cosmic_nostopmu_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["outfv"]["nominal"] = new TH1D("h_trkmom_outfv_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["outfv_stopmu"]["nominal"] = new TH1D("h_trkmom_outfv_stopmu_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["outfv_nostopmu"]["nominal"] = new TH1D("h_trkmom_outfv_nostopmu_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc"]["nominal"] = new TH1D("h_trkmom_nc_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc_proton"]["nominal"] = new TH1D("h_trkmom_nc_proton_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc_pion"]["nominal"] = new TH1D("h_trkmom_nc_pion_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nc_other"]["nominal"] = new TH1D("h_trkmom_nc_other_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["anumu"]["nominal"] = new TH1D("h_trkmom_anumu_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["nue"]["nominal"] = new TH1D("h_trkmom_nue_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["signal_stopmu"]["nominal"] = new TH1D("h_trkmom_signal_stopmu_nominal", "; Track length;", 6, bins_mumom);
-  hmap_trkmom_bs["signal_nostopmu"]["nominal"] = new TH1D("h_trkmom_signal_nostopmu_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["total"]["nominal"] = new TH1D("h_trkmom_total_genie_pm1_nominal", "; Track length;", 6, bins_mumom); // 20, 0, 2.5
+  hmap_trkmom_genie_pm1_bs["signal"]["nominal"] = new TH1D("h_trkmom_signal_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["cosmic"]["nominal"] = new TH1D("h_trkmom_cosmic_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["cosmic_stopmu"]["nominal"] = new TH1D("h_trkmom_cosmic_stopmu_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["cosmic_nostopmu"]["nominal"] = new TH1D("h_trkmom_cosmic_nostopmu_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["outfv"]["nominal"] = new TH1D("h_trkmom_outfv_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["outfv_stopmu"]["nominal"] = new TH1D("h_trkmom_outfv_stopmu_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["outfv_nostopmu"]["nominal"] = new TH1D("h_trkmom_outfv_nostopmu_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc"]["nominal"] = new TH1D("h_trkmom_nc_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc_proton"]["nominal"] = new TH1D("h_trkmom_nc_proton_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc_pion"]["nominal"] = new TH1D("h_trkmom_nc_pion_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nc_other"]["nominal"] = new TH1D("h_trkmom_nc_other_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["anumu"]["nominal"] = new TH1D("h_trkmom_anumu_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["nue"]["nominal"] = new TH1D("h_trkmom_nue_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["signal_stopmu"]["nominal"] = new TH1D("h_trkmom_signal_stopmu_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_pm1_bs["signal_nostopmu"]["nominal"] = new TH1D("h_trkmom_signal_nostopmu_genie_pm1_nominal", "; Track length;", 6, bins_mumom);
 
+  std::map<std::string,std::map<std::string,TH1D*>> hmap_trkmom_genie_multisim_bs;
+  //std::map<std::string, TH1D*> mymap;
+  //mymap["nominal"] = new TH1D("h_trkmom_total_nominal", "; Track length;", 6, bins_mumom); 
+  hmap_trkmom_genie_multisim_bs["total"]["nominal"] = new TH1D("h_trkmom_total_genie_mulinominal", "; Track length;", 6, bins_mumom); // 20, 0, 2.5
+  hmap_trkmom_genie_multisim_bs["signal"]["nominal"] = new TH1D("h_trkmom_signal_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["cosmic"]["nominal"] = new TH1D("h_trkmom_cosmic_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["cosmic_stopmu"]["nominal"] = new TH1D("h_trkmom_cosmic_stopmu_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["cosmic_nostopmu"]["nominal"] = new TH1D("h_trkmom_cosmic_nostopmu_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["outfv"]["nominal"] = new TH1D("h_trkmom_outfv_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["outfv_stopmu"]["nominal"] = new TH1D("h_trkmom_outfv_stopmu_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["outfv_nostopmu"]["nominal"] = new TH1D("h_trkmom_outfv_nostopmu_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["nc"]["nominal"] = new TH1D("h_trkmom_nc_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["nc_proton"]["nominal"] = new TH1D("h_trkmom_nc_proton_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["nc_pion"]["nominal"] = new TH1D("h_trkmom_nc_pion_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["nc_other"]["nominal"] = new TH1D("h_trkmom_nc_other_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["anumu"]["nominal"] = new TH1D("h_trkmom_anumu_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["nue"]["nominal"] = new TH1D("h_trkmom_nue_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["signal_stopmu"]["nominal"] = new TH1D("h_trkmom_signal_stopmu_genie_mulinominal", "; Track length;", 6, bins_mumom);
+  hmap_trkmom_genie_multisim_bs["signal_nostopmu"]["nominal"] = new TH1D("h_trkmom_signal_nostopmu_genie_mulinominal", "; Track length;", 6, bins_mumom);
 
   std::map<std::string,TH1D*> hmap_trkphi;
   hmap_trkphi["total"] = new TH1D("h_trkphi_total", "; Track #phi;", 20, -3.15, 3.15);
@@ -888,7 +926,8 @@ int main(int argc, char* argv[]) {
   TH2D * h_deltall_length_nu = new TH2D("h_deltall_length_nu", "Neutrino origin;MCS Delta LL;Track Length [cm]", 70, -30, 30, 70, 0, 700);
 
 
-  std::vector<std::string> fname;
+  std::vector<std::string> fname_genie_pm1;
+  std::vector<std::string> fname_genie_multisim;
   
   
   int barWidth = 70;
@@ -938,7 +977,7 @@ int main(int argc, char* argv[]) {
 
     // ************************
     //
-    // Set weight names, prepare bootstraps
+    // Set weight names, prepare bootstraps -- PM1SIGMA
     //
     // ************************
 
@@ -946,56 +985,132 @@ int main(int argc, char* argv[]) {
     
     if (i==0 && !isdata && _fill_bootstrap) {
 
-      for (auto name : t->evtwgt_funcname) {
-        fname.push_back(name + "_p1");
-        fname.push_back(name + "_m1");
+      for (auto name : t->evtwgt_genie_pm1_funcname) {
+        fname_genie_pm1.push_back(name + "_p1");
+        fname_genie_pm1.push_back(name + "_m1");
       }
 
-      //for (auto n : fname) 
+      //for (auto n : fname_genie_pm1) 
         //std::cout << "Function name " << n << std::endl;
 
-      //std::cout << "Number of reweighting functions: " << fname.size() << std::endl;
+      //std::cout << "Number of reweighting functions: " << fname_genie_pm1.size() << std::endl;
 
 
       // Number of events
-      for (auto iter : hmap_trkmom_bs) {
+      for (auto iter : hmap_trkmom_genie_pm1_bs) {
 
         std::string this_name = iter.first;
         std::map<std::string, TH1D*> bs_map = iter.second;
 
         // Now emplace the histograms for the variations
-        for (size_t i = 0; i < fname.size(); i++) {
+        for (size_t i = 0; i < fname_genie_pm1.size(); i++) {
 
-          std::string histo_name = "h_trkmom_" + this_name + "_" + fname.at(i);
+          std::string histo_name = "h_trkmom_" + this_name + "_" + fname_genie_pm1.at(i);
           double this_bins_mumom[7] = {0.00, 0.18, 0.30, 0.45, 0.77, 1.28, 2.50};
-          hmap_trkmom_bs[this_name][fname.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom); 
+          hmap_trkmom_genie_pm1_bs[this_name][fname_genie_pm1.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom); 
 
         }
 
       }
 
       // Efficiency
-      for (size_t i = 0; i < fname.size(); i++) {
+      for (size_t i = 0; i < fname_genie_pm1.size(); i++) {
         double this_bins_mumom[7] = {0.00, 0.18, 0.30, 0.45, 0.77, 1.28, 2.50};
-        std::string histo_name = "bs_eff_mumom_num_" + fname.at(i);
-        bs_eff_mumom_num[fname.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
-        histo_name = "bs_eff_mumom_den_" + fname.at(i);
-        bs_eff_mumom_den[fname.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
+        std::string histo_name = "bs_genie_pm1_eff_mumom_num_" + fname_genie_pm1.at(i);
+        bs_genie_pm1_eff_mumom_num[fname_genie_pm1.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
+        histo_name = "bs_genie_pm1_eff_mumom_den_" + fname_genie_pm1.at(i);
+        bs_genie_pm1_eff_mumom_den[fname_genie_pm1.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
 
-        histo_name = "bs_true_reco_mom_" + fname.at(i);
-        bs_true_reco_mom[fname.at(i)] = new TH2D(histo_name.c_str(), ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, this_bins_mumom, 6, this_bins_mumom);
+        histo_name = "bs_genie_pm1_true_reco_mom_" + fname_genie_pm1.at(i);
+        bs_genie_pm1_true_reco_mom[fname_genie_pm1.at(i)] = new TH2D(histo_name.c_str(), ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, this_bins_mumom, 6, this_bins_mumom);
       }
       
     }
 
     // Prepare the vector of weights to be used for bootstraps
-    std::vector<double> wgts;
+    std::vector<double> wgts_genie_pm1;
     if (!isdata && _fill_bootstrap) {
-      for (size_t i = 0; i < t->evtwgt_weight.size(); i++) {
-        wgts.push_back(t->evtwgt_weight.at(i).at(0));
-        wgts.push_back(t->evtwgt_weight.at(i).at(1));
+      for (size_t i = 0; i < t->evtwgt_genie_pm1_weight.size(); i++) {
+        wgts_genie_pm1.push_back(t->evtwgt_genie_pm1_weight.at(i).at(0));
+        wgts_genie_pm1.push_back(t->evtwgt_genie_pm1_weight.at(i).at(1));
       }
     }
+
+
+    // ************************
+    //
+    // Set weight names, prepare bootstraps -- GENIE MULTISIM
+    //
+    // ************************
+
+
+    if (i==0 && !isdata && _fill_bootstrap) {
+
+      if (t->evtwgt_genie_multisim_nfunc == 1) {
+
+        if (t->evtwgt_genie_multisim_funcname.at(0) != "genie_all_Genie") {
+          std::cout << "GENIE Multisim: func name is " << t->evtwgt_genie_multisim_funcname.at(0) 
+                    << " which is different than genie_all" << std::endl;
+        }
+
+        fname_genie_multisim.clear();
+        fname_genie_multisim.resize(t->evtwgt_genie_multisim_nweight.at(0));
+
+        std::ostringstream oss;
+        for (size_t i_wgt = 0; i_wgt < fname_genie_multisim.size(); i_wgt++) {
+          oss.str("");
+          oss << "universe" << i_wgt;
+          fname_genie_multisim.at(i_wgt) = oss.str();
+        }
+
+
+        for (auto n : fname_genie_multisim) 
+          std::cout << "Universe name " << n << std::endl;
+
+        std::cout << "Number of universes: " << fname_genie_multisim.size() << std::endl;
+
+
+        // Number of events
+        for (auto iter : hmap_trkmom_genie_multisim_bs) {
+
+          std::string this_name = iter.first;
+          std::map<std::string, TH1D*> bs_map = iter.second;
+
+          // Now emplace the histograms for the variations
+          for (size_t i = 0; i < fname_genie_multisim.size(); i++) {
+
+            std::string histo_name = "h_genie_multisim_trkmom_" + this_name + "_" + fname_genie_multisim.at(i);
+            double this_bins_mumom[7] = {0.00, 0.18, 0.30, 0.45, 0.77, 1.28, 2.50};
+            //std::cout << "Generating histo with name " << histo_name << std::endl;
+            hmap_trkmom_genie_multisim_bs[this_name][fname_genie_multisim.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom); 
+
+          }
+
+        }
+
+        // Efficiency
+        for (size_t i = 0; i < fname_genie_multisim.size(); i++) {
+          double this_bins_mumom[7] = {0.00, 0.18, 0.30, 0.45, 0.77, 1.28, 2.50};
+          std::string histo_name = "bs_genie_pm1_eff_mumom_num_" + fname_genie_multisim.at(i);
+          bs_genie_multisim_eff_mumom_num[fname_genie_multisim.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
+          histo_name = "bs_genie_multisimeff_mumom_den_" + fname_genie_multisim.at(i);
+          bs_genie_multisim_eff_mumom_den[fname_genie_multisim.at(i)] = new TH1D(histo_name.c_str(), "; Track length;", 6, this_bins_mumom);
+
+          histo_name = "bs_genie_multisimtrue_reco_mom_" + fname_genie_multisim.at(i);
+          bs_genie_multisim_true_reco_mom[fname_genie_multisim.at(i)] = new TH2D(histo_name.c_str(), ";Muon Momentum (Truth) [GeV]; Muon Momentum (MCS) [GeV]", 6, this_bins_mumom, 6, this_bins_mumom);
+        } 
+      }
+      
+    }
+
+    // Prepare the vector of weights to be used for bootstraps
+    std::vector<double> wgts_genie_multisim;
+    if (!isdata && _fill_bootstrap) {
+      for (size_t i = 0; i < fname_genie_multisim.size(); i++) {
+        wgts_genie_multisim.push_back(t->evtwgt_genie_multisim_weight.at(0).at(i));
+      }
+    }
+
 
 
 
@@ -1043,8 +1158,9 @@ int main(int argc, char* argv[]) {
       
       h_eff_den->Fill(t->nu_e);
       h_eff_mumom_den->Fill(t->true_muon_mom);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->true_muon_mom, bs_eff_mumom_den, fname, wgts);
-      //h_eff_mumom_den_bs->Fill(t->true_muon_mom, 1., wgts);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->true_muon_mom, bs_genie_pm1_eff_mumom_den, fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->true_muon_mom, bs_genie_multisim_eff_mumom_den, fname_genie_multisim, wgts_genie_multisim);
+      //h_eff_mumom_den_bs->Fill(t->true_muon_mom, 1., wgts_genie_pm1);
       h_eff_muangle_den->Fill(t->lep_costheta);
       h_eff_muangle_mumom_den->Fill(t->lep_costheta, t->true_muon_mom);
       h_eff_muphi_den->Fill(t->lep_phi);
@@ -1091,6 +1207,7 @@ int main(int argc, char* argv[]) {
     if(t->nupdg == 14 && t->ccnc == 0){
       nNumuCC++;
     }
+
     
     
 
@@ -1137,7 +1254,6 @@ int main(int argc, char* argv[]) {
         
       }
     }
-    
     
     
     
@@ -1208,7 +1324,6 @@ int main(int argc, char* argv[]) {
     
     
     
-
     
     //
     // Loop over TPC Events - Preliminary plots with only the flash cut applied
@@ -1319,7 +1434,7 @@ int main(int argc, char* argv[]) {
       
     } // slice loop
     
-    
+
     
       
     int n_slc_flsmatch = 0;
@@ -1454,6 +1569,7 @@ int main(int argc, char* argv[]) {
     if (std::abs(t->slc_muoncandidate_residuals_mean.at(scl_ll_max)) > 0.7) continue;
     if (t->slc_muoncandidate_perc_used_hits_in_cluster.at(scl_ll_max) < 0.7) continue;
 
+    //if (t->slc_nuvtx_z.at(scl_ll_max) < 300) continue;
 
     //if(t->slc_longesttrack_length.at(scl_ll_max) < 25.) continue;
     
@@ -1479,9 +1595,10 @@ int main(int argc, char* argv[]) {
     hmap_multtracktol["total"]->Fill(t->slc_mult_track_tolerance.at(scl_ll_max));
     hmap_trktheta_trkmom["total"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max), t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
 
-    if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "total", fname, wgts);
-    //hmap_trkmom_bs["total"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-    //hmap_trkmom_bs["total"]["nominal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
+    if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "total", fname_genie_pm1, wgts_genie_pm1);
+    if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "total", fname_genie_multisim, wgts_genie_multisim);
+    //hmap_trkmom_genie_pm1_bs["total"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+    //hmap_trkmom_genie_pm1_bs["total"]["nominal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
 
     if (isSignal) h_true_nu_eng_aftersel->Fill(t->nu_e);
 
@@ -1496,7 +1613,8 @@ int main(int argc, char* argv[]) {
       _mom_tree->Fill();
 
       h_true_reco_mom->Fill(_mom_tree_true, _mom_tree_mcs);
-      if(!isdata && _fill_bootstrap) FillBootstrap(_mom_tree_true, _mom_tree_mcs, bs_true_reco_mom, fname, wgts);
+      if(!isdata && _fill_bootstrap) FillBootstrap(_mom_tree_true, _mom_tree_mcs, bs_genie_pm1_true_reco_mom, fname_genie_pm1, wgts_genie_pm1);
+      if(!isdata && _fill_bootstrap) FillBootstrap(_mom_tree_true, _mom_tree_mcs, bs_genie_multisim_true_reco_mom, fname_genie_multisim, wgts_genie_multisim);
       h_true_reco_costheta->Fill(_mom_tree_angle_true, _mom_tree_angle_reco);
     }
     
@@ -1610,8 +1728,9 @@ int main(int argc, char* argv[]) {
       signal_sel ++;
       h_eff_num->Fill(t->nu_e);
       h_eff_mumom_num->Fill(t->true_muon_mom);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->true_muon_mom, bs_eff_mumom_num, fname, wgts);
-      //h_eff_mumom_num_bs->Fill(t->true_muon_mom, 1., wgts);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->true_muon_mom, bs_genie_pm1_eff_mumom_num, fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->true_muon_mom, bs_genie_multisim_eff_mumom_num, fname_genie_multisim, wgts_genie_multisim);
+      //h_eff_mumom_num_bs->Fill(t->true_muon_mom, 1., wgts_genie_pm1);
       h_eff_muangle_num->Fill(t->lep_costheta);
       h_eff_muangle_mumom_num->Fill(t->lep_costheta, t->true_muon_mom);
       h_eff_muphi_num->Fill(t->lep_phi);
@@ -1643,8 +1762,9 @@ int main(int argc, char* argv[]) {
       pEff->Fill(true, t->nu_e);
       hmap_trklen["signal"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["signal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-      //hmap_trkmom_bs["signal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "signal", fname, wgts);
+      //hmap_trkmom_genie_pm1_bs["signal"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "signal", fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "signal", fname_genie_multisim, wgts_genie_multisim);
       hmap_trkphi["signal"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["signal"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["signal"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1654,8 +1774,9 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 0) {
         hmap_trklen["signal_stopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["signal_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["signal_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "signal_stopmu", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["signal_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "signal_stopmu", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "signal_stopmu", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["signal_stopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["signal_stopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["signal_stopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1665,8 +1786,9 @@ int main(int argc, char* argv[]) {
       } else {
         hmap_trklen["signal_nostopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["signal_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["signal_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "signal_nostopmu", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["signal_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "signal_nostopmu", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "signal_nostopmu", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["signal_nostopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["signal_nostopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["signal_nostopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1682,8 +1804,9 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["anumu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["anumu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-      //hmap_trkmom_bs["anumu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "anumu", fname, wgts);
+      //hmap_trkmom_genie_pm1_bs["anumu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "anumu", fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "anumu", fname_genie_multisim, wgts_genie_multisim);
       hmap_trkphi["anumu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["anumu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["anumu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1698,8 +1821,9 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["nue"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["nue"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-      //hmap_trkmom_bs["nue"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "nue", fname, wgts);
+      //hmap_trkmom_genie_pm1_bs["nue"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "nue", fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "nue", fname_genie_multisim, wgts_genie_multisim);
       hmap_trkphi["nue"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["nue"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["nue"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1716,8 +1840,9 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["nc"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["nc"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-      //hmap_trkmom_bs["nc"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "nc", fname, wgts);
+      //hmap_trkmom_genie_pm1_bs["nc"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "nc", fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "nc", fname_genie_multisim, wgts_genie_multisim);
       hmap_trkphi["nc"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["nc"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["nc"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1727,8 +1852,9 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 3) {
         hmap_trklen["nc_proton"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["nc_proton"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["nc_proton"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "nc_proton", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["nc_proton"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "nc_proton", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "nc_proton", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["nc_proton"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["nc_proton"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["nc_proton"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1739,8 +1865,9 @@ int main(int argc, char* argv[]) {
       else if (t->slc_origin_extra.at(scl_ll_max) == 2) {
         hmap_trklen["nc_pion"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["nc_pion"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["nc_pion"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "nc_pion", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["nc_pion"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "nc_pion", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "nc_pion", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["nc_pion"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["nc_pion"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["nc_pion"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1751,8 +1878,9 @@ int main(int argc, char* argv[]) {
       else {
         hmap_trklen["nc_other"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["nc_other"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["nc_other"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "nc_other", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["nc_other"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "nc_other", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "nc_other", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["nc_other"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["nc_other"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["nc_other"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1768,8 +1896,9 @@ int main(int argc, char* argv[]) {
       pEff->Fill(false, t->nu_e);
       hmap_trklen["outfv"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["outfv"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-      //hmap_trkmom_bs["outfv"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "outfv", fname, wgts);
+      //hmap_trkmom_genie_pm1_bs["outfv"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "outfv", fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "outfv", fname_genie_multisim, wgts_genie_multisim);
       hmap_trkphi["outfv"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["outfv"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["outfv"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1779,8 +1908,9 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 0) {
         hmap_trklen["outfv_stopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["outfv_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["outfv_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "outfv_stopmu", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["outfv_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "outfv_stopmu", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "outfv_stopmu", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["outfv_stopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["outfv_stopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["outfv_stopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1789,7 +1919,8 @@ int main(int argc, char* argv[]) {
       } else {
         hmap_trklen["outfv_nostopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["outfv_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "outfv_nostopmu", fname, wgts);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "outfv_nostopmu", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "outfv_nostopmu", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["outfv_nostopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["outfv_nostopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["outfv_nostopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1800,15 +1931,16 @@ int main(int argc, char* argv[]) {
     //
     // COSMIC
     //
-    else{
+    else {
       bkg_cosmic_sel ++;
       if (t->slc_crosses_top_boundary.at(scl_ll_max) == 1 )
         bkg_cosmic_top_sel++;
       pEff->Fill(false, t->nu_e);
       hmap_trklen["cosmic"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
       hmap_trkmom["cosmic"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-      //hmap_trkmom_bs["cosmic"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "cosmic", fname, wgts);
+      //hmap_trkmom_genie_pm1_bs["cosmic"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "cosmic", fname_genie_pm1, wgts_genie_pm1);
+      if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "cosmic", fname_genie_multisim, wgts_genie_multisim);
       hmap_trkphi["cosmic"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
       hmap_trktheta["cosmic"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
       hmap_multpfp["cosmic"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1819,8 +1951,9 @@ int main(int argc, char* argv[]) {
       if (t->slc_origin_extra.at(scl_ll_max) == 0) {
         hmap_trklen["cosmic_stopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["cosmic_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["cosmic_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "cosmic_stopmu", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["cosmic_stopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "cosmic_stopmu", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "cosmic_stopmu", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["cosmic_stopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["cosmic_stopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["cosmic_stopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1829,8 +1962,9 @@ int main(int argc, char* argv[]) {
       } else {
         hmap_trklen["cosmic_nostopmu"]->Fill(t->slc_longesttrack_length.at(scl_ll_max));
         hmap_trkmom["cosmic_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max));
-        //hmap_trkmom_bs["cosmic_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts);
-        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_bs, "cosmic_nostopmu", fname, wgts);
+        //hmap_trkmom_genie_pm1_bs["cosmic_nostopmu"]->Fill(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), 1., wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_pm1_bs, "cosmic_nostopmu", fname_genie_pm1, wgts_genie_pm1);
+        if (!isdata && _fill_bootstrap) FillBootstrap(t->slc_muoncandidate_mom_mcs.at(scl_ll_max), hmap_trkmom_genie_multisim_bs, "cosmic_nostopmu", fname_genie_multisim, wgts_genie_multisim);
         hmap_trkphi["cosmic_nostopmu"]->Fill(t->slc_longesttrack_phi.at(scl_ll_max));
         hmap_trktheta["cosmic_nostopmu"]->Fill(t->slc_longesttrack_theta.at(scl_ll_max));
         hmap_multpfp["cosmic_nostopmu"]->Fill(t->slc_mult_pfp.at(scl_ll_max));
@@ -1850,6 +1984,7 @@ int main(int argc, char* argv[]) {
 
   
   cout << endl << endl << "********************************" << endl;
+
   
   
   
@@ -2620,20 +2755,22 @@ int main(int argc, char* argv[]) {
 
   file_out->WriteObject(&hmap_trklen, "hmap_trklen");
   file_out->WriteObject(&hmap_trkmom, "hmap_trkmom");
-  file_out->WriteObject(&hmap_trkmom_bs, "hmap_trkmom_bs");
+  file_out->WriteObject(&hmap_trkmom_genie_pm1_bs, "hmap_trkmom_genie_pm1_bs");
+  file_out->WriteObject(&hmap_trkmom_genie_multisim_bs, "hmap_trkmom_genie_multisim_bs");
+  std::cout << "hmap_trkmom_genie_multisim_bs[\"total\"][\"nominal\"]->GetBinContent(1): " << hmap_trkmom_genie_multisim_bs["total"]["nominal"]->GetBinContent(1) << std::endl;
   file_out->WriteObject(&hmap_trktheta, "hmap_trktheta");
   file_out->WriteObject(&hmap_trkphi, "hmap_trkphi");
   file_out->WriteObject(&hmap_multpfp, "hmap_multpfp");
   file_out->WriteObject(&hmap_multtracktol, "hmap_multtracktol");
   file_out->WriteObject(&hmap_trktheta_trkmom, "hmap_trktheta_trkmom");
 
-  file_out->WriteObject(&bs_eff_mumom_num, "bs_eff_mumom_num");
-  file_out->WriteObject(&bs_eff_mumom_den, "bs_eff_mumom_den");
+  file_out->WriteObject(&bs_genie_pm1_eff_mumom_num, "bs_genie_pm1_eff_mumom_num");
+  file_out->WriteObject(&bs_genie_pm1_eff_mumom_den, "bs_genie_pm1_eff_mumom_den");
+  file_out->WriteObject(&bs_genie_multisim_eff_mumom_num, "bs_genie_multisim_eff_mumom_num");
+  file_out->WriteObject(&bs_genie_multisim_eff_mumom_den, "bs_genie_multisim_eff_mumom_den");
 
-  file_out->WriteObject(&bs_true_reco_mom, "bs_true_reco_mom");
-  for (auto i : bs_true_reco_mom) {
-    std::cout << i.first  << " => " << i.second->GetBinContent(1, 1) << std::endl;
-  }
+  file_out->WriteObject(&bs_genie_pm1_true_reco_mom, "bs_genie_pm1_true_reco_mom");
+  file_out->WriteObject(&bs_genie_multisim_true_reco_mom, "bs_genie_multisim_true_reco_mom");
 
   file_out->WriteObject(&hmap_vtxcheck_angle, "hmap_vtxcheck_angle");
   file_out->WriteObject(&hmap_residuals_std, "hmap_residuals_std");
